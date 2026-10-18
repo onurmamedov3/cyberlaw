@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: cyberlaw-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cyberlaw}
+      POSTGRES_USER: ${POSTGRES_USER:-cyberlaw}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cyberlaw_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - cyberlaw-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cyberlaw} -d ${POSTGRES_DB:-cyberlaw}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  cyberlaw-pgdata:

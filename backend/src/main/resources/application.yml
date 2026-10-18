@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: cyberlaw
+  # Reads the shared .env file in the project root (works when started from backend/ or the root)
+  config:
+    import: "optional:file:../.env[.properties],optional:file:.env[.properties]"
+  threads:
+    virtual:
+      enabled: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:cyberlaw}
+    username: ${POSTGRES_USER:cyberlaw}
+    password: ${POSTGRES_PASSWORD:cyberlaw_dev_password}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+  mvc:
+    async:
+      request-timeout: 180s
+
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:PASTE_YOUR_GEMINI_API_KEY_HERE}
+        chat:
+          model: ${GEMINI_CHAT_MODEL:gemini-2.5-flash}
+          temperature: 0.2
+        embedding:
+          api-key: ${GEMINI_API_KEY:PASTE_YOUR_GEMINI_API_KEY_HERE}
+          text:
+            model: gemini-embedding-001
+            dimensions: 768
+            task-type: RETRIEVAL_DOCUMENT
+    vectorstore:
+      pgvector:
+        # The table is created by Flyway (V1__init.sql), so Spring AI must not touch the schema
+        initialize-schema: false
+        table-name: vector_store
+        dimensions: 768
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+
+cyberlaw:
+  gemini-api-key: ${GEMINI_API_KEY:PASTE_YOUR_GEMINI_API_KEY_HERE}
+  # No fallbacks on purpose: both must come from .env, so they are never published with the code
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: 24h
+  admin:
+    email: ${ADMIN_EMAIL:admin@cyberlaw.az}
+    password: ${ADMIN_PASSWORD}
+  docs-folder: ../docs
+  uploads:
+    max-private-documents: 5
+    private-ttl: 7d
+  rag:
+    top-k: 6
+    similarity-threshold: 0.5
+    chunk-max-chars: 2000
+    history-messages: 10
+  compliance:
+    max-requirements: 40
+    max-extraction-calls: 8
+    judge-batch-size: 8
+
+logging:
+  level:
+    az.cyberlaw: INFO

@@ -1,0 +1,22 @@
+# Secrets
+.env
+
+# Backend
+backend/target/
+backend/src/main/resources/static/
+*.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Law files are downloaded locally, not committed
+docs/*
+!docs/README.md
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
