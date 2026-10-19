@@ -1,9 +1,16 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
+const CITATION = /\[(\d{1,2})\](?!\()/g
+
 /** Turns "[2]" into a link the renderer below displays as a clickable citation chip. */
 function linkCitations(text: string) {
-  return text.replace(/\[(\d{1,2})\](?!\()/g, '[$1](#cite-$1)')
+  return text.replace(CITATION, '[$1](#cite-$1)')
+}
+
+/** The source numbers an answer actually cites, e.g. "… [1] … [2][3]" → {1, 2, 3}. */
+export function citedIndexes(text: string): Set<number> {
+  return new Set(Array.from(text.matchAll(CITATION), (m) => Number(m[1])))
 }
 
 export function Markdown({ text, onCite }: { text: string; onCite?: (index: number) => void }) {

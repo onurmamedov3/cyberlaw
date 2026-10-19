@@ -1,37 +1,97 @@
 import {type KeyboardEvent, useEffect, useRef, useState} from 'react'
 import {AnimatePresence, motion} from 'motion/react'
 import {
+    ArrowRight,
+    Blend,
     BookOpen,
+    ChevronRight,
+    FileText,
+    Landmark,
     LoaderCircle,
+    LockKeyhole,
     Plus,
     RefreshCw,
-    ScanSearch,
-    SendHorizontal,
+    ShieldCheck,
     Sparkles,
     TriangleAlert
 } from 'lucide-react'
 import {useChat} from '../lib/chat'
-import {useT} from '../lib/settings'
+import {useSettings, useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
 import type {ChatMessage, SearchScope, Source} from '../lib/types'
-import {Markdown} from '../components/Markdown'
+import {Markdown, citedIndexes} from '../components/Markdown'
 import {SourceDrawer} from '../components/SourceDrawer'
 
-const SCOPES: SearchScope[] = ['OFFICIAL', 'MINE', 'BOTH']
-const SUGGESTIONS: TKey[] = ['chat.suggest1', 'chat.suggest2', 'chat.suggest3', 'chat.suggest4']
+const SCOPES: { scope: SearchScope; icon: typeof Landmark }[] = [
+  { scope: 'OFFICIAL', icon: Landmark },
+  { scope: 'MINE', icon: FileText },
+  { scope: 'BOTH', icon: Blend },
+]
+
+/** Suggestion cards; class names are written out in full so Tailwind can find them. */
+const SUGGESTIONS: { key: TKey; icon: typeof Landmark; tile: string; label: string; hover: string }[] = [
+  {
+    key: 'chat.suggest1',
+    icon: FileText,
+    tile: 'bg-sky-500/15 text-sky-300',
+    label: 'text-sky-400',
+    hover: 'hover:border-sky-400/50 hover:shadow-[0_0_32px_-10px_rgb(56_189_248/0.8)]',
+  },
+  {
+    key: 'chat.suggest2',
+    icon: LockKeyhole,
+    tile: 'bg-violet-500/15 text-violet-300',
+    label: 'text-violet-400',
+    hover: 'hover:border-violet-400/50 hover:shadow-[0_0_32px_-10px_rgb(168_85_247/0.8)]',
+  },
+  {
+    key: 'chat.suggest3',
+    icon: ShieldCheck,
+    tile: 'bg-emerald-500/15 text-emerald-300',
+    label: 'text-emerald-400',
+    hover: 'hover:border-emerald-400/50 hover:shadow-[0_0_32px_-10px_rgb(52_211_153/0.8)]',
+  },
+  {
+    key: 'chat.suggest4',
+    icon: TriangleAlert,
+    tile: 'bg-amber-500/15 text-amber-300',
+    label: 'text-amber-400',
+    hover: 'hover:border-amber-400/50 hover:shadow-[0_0_32px_-10px_rgb(251_191_36/0.8)]',
+  },
+]
 
 export function ChatPage() {
   const t = useT()
-  const { messages, scope, setScope, ask, busy, newChat } = useChat()
+  const { messages, ask, busy } = useChat()
   const [input, setInput] = useState('')
   const [openSource, setOpenSource] = useState<Source | null>(null)
-  const bottom = useRef<HTMLDivElement>(null)
+  const page = useRef<HTMLDivElement>(null)
   const textarea = useRef<HTMLTextAreaElement>(null)
 
-  const lastText = messages[messages.length - 1]?.text
+  // Follow the answer to the very end of <main> (so nothing hides behind the sticky composer),
+  // unless the user scrolls up to read; scrolling back to the end resumes following.
+  const following = useRef(true)
   useEffect(() => {
-    bottom.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [messages.length, lastText])
+    const main = page.current?.closest('main')
+    if (!main) return
+    let lastTop = main.scrollTop
+    const onScroll = () => {
+      if (main.scrollTop < lastTop - 2) following.current = false
+      if (main.scrollHeight - main.scrollTop - main.clientHeight < 40) following.current = true
+      lastTop = main.scrollTop
+    }
+    main.addEventListener('scroll', onScroll, { passive: true })
+    return () => main.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const last = messages[messages.length - 1]
+  const count = useRef(messages.length)
+  useEffect(() => {
+    if (messages.length !== count.current) following.current = true // a new question always jumps down
+    count.current = messages.length
+    const main = page.current?.closest('main')
+    if (main && following.current) main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' })
+  }, [messages.length, last?.text, last?.status])
 
   // grow the textarea with its content
   useEffect(() => {
@@ -55,66 +115,55 @@ export function ChatPage() {
   }
 
   return (
-    <div className="mx-auto flex h-full max-w-4xl flex-col px-4">
-      {/* header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 py-4">
-        <div className="flex items-center gap-2">
-          <span className="label-mono">{t('chat.scope')}</span>
-          <div className="inline-flex rounded-xl border border-line bg-panel/60 p-1">
-            {SCOPES.map((s) => (
+    <div ref={page} className="flex min-h-full flex-col">
+      <ChatHeader />
+
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4">
+        {/* messages */}
+        <div className="flex-1 space-y-6 py-6">
+          {messages.length === 0 ? (
+            <EmptyState onPick={(q) => send(q)} />
+          ) : (
+            messages.map((m) =>
+              m.role === 'user' ? (
+                <UserBubble key={m.id} text={m.text} />
+              ) : (
+                <AssistantMessage key={m.id} message={m} onOpenSource={setOpenSource} />
+              ),
+            )
+          )}
+        </div>
+
+        {/* composer: pill with a cyan→violet gradient border */}
+        <div className="sticky bottom-0 pb-4 pt-6">
+          <div className="rounded-[30px] bg-gradient-to-r from-neon via-sky-500 to-violet p-[1.5px] shadow-[0_0_40px_-12px_rgb(56_189_248/0.6)] transition-shadow focus-within:shadow-[0_0_50px_-8px_rgb(168_85_247/0.7)]">
+            <div className="flex items-end gap-3 rounded-[28.5px] bg-[#070b16] py-2 pl-5 pr-2">
+              <Sparkles color="url(#cl-gradient)" className="mb-3 h-6 w-6 shrink-0" />
+              <textarea
+                ref={textarea}
+                rows={1}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKey}
+                placeholder={t('chat.placeholder')}
+                maxLength={2000}
+                className="max-h-[200px] flex-1 resize-none bg-transparent py-3 text-[15px] outline-none placeholder:text-muted/80"
+              />
               <button
-                key={s}
-                onClick={() => setScope(s)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                  scope === s ? 'bg-neon/15 text-neon shadow-[inset_0_0_0_1px_rgb(34_211_238/0.5)]' : 'text-muted hover:text-white'
-                }`}
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-violet-500 text-white shadow-[0_0_22px_-4px_rgb(56_189_248/0.8)] transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
+                disabled={busy || !input.trim()}
+                onClick={() => send()}
+                aria-label={t('chat.send')}
               >
-                {t(`chat.scope.${s}`)}
+                {busy ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <ChevronRight className="h-6 w-6" strokeWidth={2.5} />}
               </button>
-            ))}
+            </div>
           </div>
+          <p className="mt-3 flex items-center justify-center gap-2 text-center text-xs text-muted">
+            <ShieldCheck className="h-4 w-4 shrink-0 text-violet-400" />
+            {t('chat.disclaimer')}
+          </p>
         </div>
-        {messages.length > 0 && (
-          <button className="btn btn-ghost py-2 text-xs" onClick={newChat}>
-            <Plus className="h-4 w-4" /> {t('chat.newChat')}
-          </button>
-        )}
-      </div>
-
-      {/* messages */}
-      <div className="flex-1 space-y-6 pb-6">
-        {messages.length === 0 ? (
-          <EmptyState onPick={(q) => send(q)} />
-        ) : (
-          messages.map((m) =>
-            m.role === 'user' ? (
-              <UserBubble key={m.id} text={m.text} />
-            ) : (
-              <AssistantMessage key={m.id} message={m} onOpenSource={setOpenSource} />
-            ),
-          )
-        )}
-        <div ref={bottom} />
-      </div>
-
-      {/* composer */}
-      <div className="sticky bottom-0 pb-4 pt-2">
-        <div className="glass flex items-end gap-2 p-2 shadow-[0_0_40px_-18px_var(--color-neon)] focus-within:border-neon/50">
-          <textarea
-            ref={textarea}
-            rows={1}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKey}
-            placeholder={t('chat.placeholder')}
-            maxLength={2000}
-            className="max-h-[200px] flex-1 resize-none bg-transparent px-3 py-2.5 text-[15px] outline-none placeholder:text-muted/70"
-          />
-          <button className="btn btn-neon h-11 w-11 shrink-0 p-0" disabled={busy || !input.trim()} onClick={() => send()} aria-label={t('chat.send')}>
-            {busy ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <SendHorizontal className="h-5 w-5" />}
-          </button>
-        </div>
-        <p className="mt-2 text-center text-[11px] text-muted">{t('chat.disclaimer')}</p>
       </div>
 
       <SourceDrawer source={openSource} onClose={() => setOpenSource(null)} />
@@ -122,29 +171,116 @@ export function ChatPage() {
   )
 }
 
-function EmptyState({ onPick }: { onPick: (q: string) => void }) {
+/** Floating search-scope switch (centred) with the "new chat" button on the right; no bar behind it. */
+function ChatHeader() {
   const t = useT()
+  const { messages, scope, setScope, newChat } = useChat()
+
   return (
-    <motion.div className="pt-10 text-center sm:pt-20" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-2xl border border-neon/40 bg-neon/10 shadow-[0_0_50px_-10px_var(--color-neon)]">
-        <Sparkles className="h-10 w-10 text-neon" />
+    // the empty corners let clicks through to the content scrolling underneath
+    <header className="pointer-events-none sticky top-16 z-20 md:top-0">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4 sm:px-6">
+        <div />
+
+        <div className="pointer-events-auto flex items-center rounded-full border border-line bg-panel/80 p-1.5 shadow-[0_0_30px_-12px_rgb(34_211_238/0.5)] backdrop-blur-xl">
+          {SCOPES.map(({ scope: s, icon: Icon }) => {
+            const active = scope === s
+            return (
+              <button
+                key={s}
+                onClick={() => setScope(s)}
+                aria-pressed={active}
+                title={t(`chat.scope.${s}`)}
+                className={`relative flex items-center gap-2 rounded-full px-3.5 py-2.5 text-sm font-semibold transition-colors sm:px-5 ${
+                  active ? 'text-white' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="scope-pill"
+                    className="absolute inset-0 rounded-full bg-gradient-to-r from-sky-400 via-blue-500 to-violet-500 shadow-[0_0_28px_-4px_rgb(56_189_248/0.75)]"
+                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                  />
+                )}
+                <Icon className="relative h-5 w-5" strokeWidth={1.75} />
+                <span className="relative hidden sm:inline">{t(`chat.scope.${s}`)}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="flex justify-end">
+          {messages.length > 0 && (
+            <button
+              className="btn-round pointer-events-auto backdrop-blur-xl"
+              onClick={newChat}
+              title={t('chat.newChat')}
+              aria-label={t('chat.newChat')}
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+          )}
+        </div>
       </div>
-      <h1 className="font-display text-3xl font-extrabold tracking-wide sm:text-4xl">
+    </header>
+  )
+}
+
+/** Small dots floating around the hero icon. */
+const DOTS = [
+  { x: -175, y: 12, size: 6, color: 'bg-neon' },
+  { x: -130, y: -18, size: 4, color: 'bg-sky-500' },
+  { x: 125, y: -18, size: 5, color: 'bg-violet' },
+  { x: 95, y: 8, size: 4, color: 'bg-indigo-400' },
+  { x: 160, y: 22, size: 5, color: 'bg-violet-500' },
+]
+
+function EmptyState({ onPick }: { onPick: (q: string) => void }) {
+  const { t, animations } = useSettings()
+  return (
+    <motion.div className="pt-6 text-center sm:pt-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="relative mx-auto mb-8 h-24 w-24">
+        {DOTS.map((d, i) => (
+          <motion.span
+            key={i}
+            className={`absolute left-1/2 top-1/2 rounded-full ${d.color}`}
+            style={{ width: d.size, height: d.size, marginLeft: d.x, marginTop: d.y }}
+            animate={animations ? { y: [0, -7, 0], opacity: [0.45, 1, 0.45] } : undefined}
+            transition={{ duration: 3 + i * 0.6, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        ))}
+        <div className="rounded-3xl bg-gradient-to-br from-neon to-violet p-[1.5px] shadow-[0_0_60px_-8px_rgb(56_189_248/0.7)]">
+          <div className="grid h-[93px] w-[93px] place-items-center rounded-[22.5px] bg-panel">
+            <Sparkles color="url(#cl-gradient)" className="h-12 w-12" strokeWidth={1.6} />
+          </div>
+        </div>
+      </div>
+
+      <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
         <span className="neon-text">{t('chat.emptyTitle')}</span>
       </h1>
-      <p className="mx-auto mt-3 max-w-lg text-muted">{t('chat.emptySubtitle')}</p>
-      <div className="mt-10 grid gap-3 text-left sm:grid-cols-2">
-        {SUGGESTIONS.map((key, i) => (
+      <p className="mx-auto mt-4 max-w-xl text-lg text-slate-300">{t('chat.emptySubtitle')}</p>
+
+      <div className="mt-12 grid gap-4 text-left md:grid-cols-2">
+        {SUGGESTIONS.map(({ key, icon: Icon, tile, label, hover }, i) => (
           <motion.button
             key={key}
             onClick={() => onPick(t(key))}
-            className="glass glass-hover p-4 text-sm text-slate-300"
+            className={`group glass flex items-center gap-4 rounded-2xl p-4 transition-all ${hover}`}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 + i * 0.08 }}
           >
-            <span className="mb-1 block font-mono text-xs text-neon">&gt; query_{String(i + 1).padStart(2, '0')}</span>
-            {t(key)}
+            <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-xl ${tile}`}>
+              <Icon className="h-8 w-8" strokeWidth={1.75} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className={`block font-mono text-xs ${label}`}>&gt; query_{String(i + 1).padStart(2, '0')}</span>
+              <span className="mt-1 block text-[15px] leading-snug text-slate-100">{t(key)}</span>
+            </span>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:border-white/30 group-hover:text-white">
+              <ArrowRight className="h-4 w-4" />
+            </span>
           </motion.button>
         ))}
       </div>
@@ -166,6 +302,11 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
   const t = useT()
   const { retry, retryCountdown } = useChat()
   const sources = message.sources ?? []
+  // only the sources the finished answer cites (retrieval may return unused passages)
+  const cited = citedIndexes(message.text)
+  const shown = message.status === 'done' ? sources.filter((s) => cited.has(s.index)) : []
+  // searching the documents and waiting for the first words of the answer
+  const thinking = message.status === 'searching' || (message.status === 'streaming' && !message.text)
   const openIndex = (i: number) => {
     const s = sources.find((x) => x.index === i)
     if (s) onOpenSource(s)
@@ -178,21 +319,21 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
       </div>
       <div className="min-w-0 flex-1">
         <AnimatePresence>
-          {message.status === 'searching' && (
+          {thinking && (
             <motion.div
               className="scan-bar glass inline-flex items-center gap-3 px-4 py-3 font-mono text-sm text-neon"
               exit={{ opacity: 0, height: 0 }}
             >
-              <ScanSearch className="h-4 w-4 animate-pulse" />
-              {t('chat.searching')}
+              <Sparkles className="h-4 w-4 animate-pulse" />
+              {t('chat.thinking')}
               <span className="typing-cursor" />
             </motion.div>
           )}
         </AnimatePresence>
 
-        {sources.length > 0 && message.status !== 'searching' && (
+        {shown.length > 0 && (
           <div className="label-mono mb-2 text-acid">
-            ✓ {sources.length} {t('chat.foundSources')}
+            ✓ {shown.length} {t('chat.foundSources')}
           </div>
         )}
 
@@ -217,11 +358,11 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
           </div>
         )}
 
-        {sources.length > 0 && message.status === 'done' && (
+        {shown.length > 0 && (
           <div className="mt-4">
             <div className="label-mono mb-2">{t('chat.sources')}</div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {sources.map((s) => (
+              {shown.map((s) => (
                 <button
                   key={s.index}
                   onClick={() => onOpenSource(s)}

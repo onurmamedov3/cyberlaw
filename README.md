@@ -39,6 +39,9 @@ question ──► embed ──► filter (scope, owner) ───────�
             numbered sources + strict system prompt ──► Gemini ──► SSE stream ──► React UI
 ```
 
+Pure small talk ("Salam", "sağ ol", "thanks", "bye") skips the search and gets a short reply without sources
+(`SmallTalk.java`). Under each answer the UI lists only the sources the answer actually cites (`[1]`, `[2]`…).
+
 ## Run it locally
 
 ### 1. Prerequisites

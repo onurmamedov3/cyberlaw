@@ -12,6 +12,15 @@ export function CyberBackground() {
       />
       {animations && <div className="cyber-grid" />}
       <div className="scanline" />
+      {/* shared cyan→violet gradient for icons: <Sparkles color="url(#cl-gradient)" /> */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <linearGradient id="cl-gradient" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#22d3ee" />
+            <stop offset="100%" stopColor="#a855f7" />
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
   )
 }
