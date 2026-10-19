@@ -65,19 +65,22 @@ public class ChatService {
 		String answerLanguage = LanguageDetector.detect(question).equals("az") ? "az"
 				: ("az".equals(request.language()) && !looksEnglish(question) ? "az" : "en");
 
+		boolean smallTalk = SmallTalk.matches(question);
+
 		return Flux.defer(() -> {
-			List<Source> sources = retrieval.search(question, userId,
-					request.scope() != null ? request.scope() : SearchScope.BOTH);
+			List<Source> sources = smallTalk ? List.of()
+					: retrieval.search(question, userId, request.scope() != null ? request.scope() : SearchScope.BOTH);
 			List<Message> history = chatMemory.get(memoryKey);
 			ServerSentEvent<Object> sourcesEvent = event("sources", sources);
 
-			if (sources.isEmpty() && history.isEmpty()) {
+			if (!smallTalk && sources.isEmpty() && history.isEmpty()) {
 				String answer = Prompts.noSourcesAnswer(answerLanguage);
 				return Flux.just(sourcesEvent, event("token", Map.of("text", answer)), event("done", Map.of()));
 			}
 
 			List<Message> messages = new ArrayList<>();
-			messages.add(new SystemMessage(Prompts.chatSystem(sources, request.language())));
+			messages.add(new SystemMessage(smallTalk ? Prompts.smallTalkSystem(request.language())
+					: Prompts.chatSystem(sources, request.language())));
 			messages.addAll(history);
 			messages.add(new UserMessage(question));
 

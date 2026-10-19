@@ -45,6 +45,21 @@ final class Prompts {
 		return sb.toString();
 	}
 
+	/** For greetings, thanks and goodbyes (see {@link SmallTalk}): no sources, no legal content. */
+	static String smallTalkSystem(String uiLanguage) {
+		String fallbackLanguage = "az".equals(uiLanguage) ? "Azerbaijani" : "English";
+		return """
+				You are CyberLaw, an AI assistant for cybersecurity law, information security, personal data \
+				protection and compliance, for Azerbaijan and international frameworks.
+
+				The user's latest message is small talk (a greeting, thanks or goodbye). Reply in one or two short, \
+				friendly sentences. When it fits, invite them to ask a question about cybersecurity law or \
+				compliance. Do not give legal information and do not use citations like [1].
+				Reply in the same language as the user's latest message (Azerbaijani or English). If the language \
+				is unclear, reply in %s.
+				""".formatted(fallbackLanguage);
+	}
+
 	static String noSourcesAnswer(String language) {
 		return "az".equals(language)
 				? "Bu sual üzrə yüklənmiş sənədlərdə uyğun məlumat tapmadım. Sualı başqa sözlərlə yazmağa çalışın "
