@@ -1,15 +1,23 @@
 import {createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react'
-import {del, streamChat} from './api'
+import {type ApiError, del, streamChat} from './api'
 import {useSettings} from './settings'
 import type {ChatMessage, SearchScope} from './types'
 
 const RETRY_SECONDS = 20
 
+/** Seconds before the one automatic retry: Gemini's free-tier limit, or our own per-user limit. */
+function autoRetrySeconds(error: ApiError) {
+  if (error.code === 'RATE_LIMIT') return RETRY_SECONDS
+  if (error.code === 'TOO_MANY_QUESTIONS') return Math.max(1, Number(error.params.seconds) || RETRY_SECONDS)
+  return null
+}
+
 interface ChatContextValue {
   messages: ChatMessage[]
   scope: SearchScope
   busy: boolean
-  retryCountdown: number | null
+  /** The answer that will be retried automatically, and in how many seconds. */
+  countdown: { id: string; seconds: number } | null
   setScope: (scope: SearchScope) => void
   ask: (question: string) => void
   retry: (messageId: string) => void
@@ -28,7 +36,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const { lang } = useSettings()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [scope, setScope] = useState<SearchScope>('BOTH')
-  const [retryCountdown, setRetryCountdown] = useState<number | null>(null)
+  const [countdown, setCountdown] = useState<ChatContextValue['countdown']>(null)
   const conversationId = useRef(newId())
   const abort = useRef<AbortController | null>(null)
   const retryTimer = useRef<number | null>(null)
@@ -56,10 +64,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               errorMessage: error.message,
               errorParams: error.params,
             }))
-            // the free tier allows a few requests per minute: retry once automatically
-            if (error.code === 'RATE_LIMIT' && !autoRetried.current.has(assistantId)) {
+            // only a few requests per minute are allowed: retry once automatically
+            const seconds = autoRetrySeconds(error)
+            if (seconds !== null && !autoRetried.current.has(assistantId)) {
               autoRetried.current.add(assistantId)
-              startCountdown(assistantId)
+              startCountdown(assistantId, seconds)
             }
           },
         },
@@ -69,12 +78,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     [scope, lang],
   )
 
-  const startCountdown = (assistantId: string) => {
-    let left = RETRY_SECONDS
-    setRetryCountdown(left)
+  const startCountdown = (assistantId: string, seconds: number) => {
+    stopCountdown()
+    let left = seconds
+    setCountdown({ id: assistantId, seconds: left })
     retryTimer.current = window.setInterval(() => {
       left -= 1
-      setRetryCountdown(left)
+      setCountdown({ id: assistantId, seconds: left })
       if (left <= 0) {
         stopCountdown()
         retryRef.current(assistantId)
@@ -85,7 +95,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const stopCountdown = () => {
     if (retryTimer.current) window.clearInterval(retryTimer.current)
     retryTimer.current = null
-    setRetryCountdown(null)
+    setCountdown(null)
   }
 
   const ask = useCallback(
@@ -138,8 +148,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => () => stopCountdown(), [])
 
   const value = useMemo(
-    () => ({ messages, scope, busy, retryCountdown, setScope, ask, retry, newChat }),
-    [messages, scope, busy, retryCountdown, ask, retry, newChat],
+    () => ({ messages, scope, busy, countdown, setScope, ask, retry, newChat }),
+    [messages, scope, busy, countdown, ask, retry, newChat],
   )
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
 }

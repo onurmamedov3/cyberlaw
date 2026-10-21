@@ -302,7 +302,7 @@ function UserBubble({ text }: { text: string }) {
 function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onOpenSource: (s: Source) => void }) {
   const t = useT()
   const errorText = useErrorText()
-  const { retry, retryCountdown } = useChat()
+  const { retry, countdown } = useChat()
   const sources = message.sources ?? []
   // only the sources the finished answer cites (retrieval may return unused passages)
   const cited = citedIndexes(message.text)
@@ -350,8 +350,10 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
           <div className="mt-2 flex flex-wrap items-center gap-3 rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-red-200">
             <TriangleAlert className="h-4 w-4 shrink-0" />
             <span className="flex-1">
-              {message.errorCode === 'RATE_LIMIT' && retryCountdown !== null
-                ? `${t('chat.retryIn')} ${retryCountdown}${t('chat.seconds')}`
+              {countdown?.id === message.id
+                ? t(message.errorCode === 'TOO_MANY_QUESTIONS' ? 'chat.tooFastRetryIn' : 'chat.retryIn', {
+                    seconds: countdown.seconds,
+                  })
                 : errorText({ code: message.errorCode, message: message.errorMessage, params: message.errorParams })}
             </span>
             <button className="btn btn-danger py-1.5 text-xs" onClick={() => retry(message.id)}>

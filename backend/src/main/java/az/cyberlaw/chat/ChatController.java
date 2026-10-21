@@ -23,14 +23,19 @@ public class ChatController {
 
 	private final ChatService chatService;
 
-	public ChatController(ChatService chatService) {
+	private final ChatRateLimiter rateLimiter;
+
+	public ChatController(ChatService chatService, ChatRateLimiter rateLimiter) {
 		this.chatService = chatService;
+		this.rateLimiter = rateLimiter;
 	}
 
 	@PostMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<ServerSentEvent<Object>> stream(@AuthenticationPrincipal Jwt jwt,
 			@Valid @RequestBody ChatRequest request) {
-		return chatService.stream(CurrentUser.of(jwt).id(), request);
+		CurrentUser user = CurrentUser.of(jwt);
+		rateLimiter.check(user);
+		return chatService.stream(user.id(), request);
 	}
 
 	/** "New chat": forget the conversation history. */

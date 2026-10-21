@@ -12,6 +12,7 @@ public record CyberLawProperties(
 		String docsFolder,
 		Uploads uploads,
 		Rag rag,
+		Chat chat,
 		Compliance compliance) {
 
 	public record Jwt(String secret, Duration expiration) {
@@ -24,6 +25,10 @@ public record CyberLawProperties(
 	}
 
 	public record Rag(int topK, double similarityThreshold, int chunkMaxChars, int historyMessages) {
+	}
+
+	/** Questions per user per minute (admins are never limited, 0 = no limit). */
+	public record Chat(int maxQuestionsPerMinute) {
 	}
 
 	public record Compliance(int maxRequirements, int maxExtractionCalls, int judgeBatchSize) {

@@ -42,8 +42,8 @@ const en = {
   'chat.sources': 'Sources',
   'chat.disclaimer': 'CyberLaw provides information, not legal advice. Always check the official text.',
   'chat.retry': 'Retry',
-  'chat.retryIn': 'Rate limit reached, retrying in',
-  'chat.seconds': 's',
+  'chat.retryIn': 'Rate limit reached, retrying in {seconds} s',
+  'chat.tooFastRetryIn': 'Too many questions in one minute, sending again in {seconds} s',
   'chat.you': 'You',
   'chat.suggest1': 'What are the obligations of a personal data operator in Azerbaijan?',
   'chat.suggest2': 'Which acts are crimes against computer information?',
@@ -120,6 +120,12 @@ const en = {
   'admin.viewChecklist': 'View checklist',
   'admin.hideChecklist': 'Hide checklist',
   'admin.requirements': 'requirements',
+  'admin.chatLimit': 'Chat limit',
+  'admin.chatLimitHint':
+    'How many questions one user may ask per minute. 0 = no limit. Admins are never limited. After a restart the value from .env applies again.',
+  'admin.perMinute': 'per minute',
+  'admin.save': 'Save',
+  'admin.saved': 'Saved',
 
   // settings
   'settings.title': 'Settings',
@@ -227,8 +233,8 @@ const az: Record<TKey, string> = {
   'chat.sources': 'Mənbələr',
   'chat.disclaimer': 'CyberLaw məlumat verir, hüquqi məsləhət vermir. Həmişə rəsmi mətni yoxlayın.',
   'chat.retry': 'Yenidən cəhd et',
-  'chat.retryIn': 'Sorğu limiti doldu, yenidən cəhd:',
-  'chat.seconds': 's',
+  'chat.retryIn': 'Sorğu limiti doldu, {seconds} saniyədən sonra yenidən cəhd ediləcək',
+  'chat.tooFastRetryIn': 'Bir dəqiqədə çox sual verildi, {seconds} saniyədən sonra yenidən göndəriləcək',
   'chat.you': 'Siz',
   'chat.suggest1': 'Azərbaycanda fərdi məlumatlar operatorunun hansı vəzifələri var?',
   'chat.suggest2': 'Kompüter informasiyası əleyhinə hansı əməllər cinayət sayılır?',
@@ -301,6 +307,12 @@ const az: Record<TKey, string> = {
   'admin.viewChecklist': 'Siyahıya bax',
   'admin.hideChecklist': 'Siyahını gizlət',
   'admin.requirements': 'tələb',
+  'admin.chatLimit': 'Söhbət limiti',
+  'admin.chatLimitHint':
+    'Bir istifadəçinin dəqiqədə verə biləcəyi sual sayı. 0 = limit yoxdur. Adminlərə limit tətbiq olunmur. Server yenidən başladıqdan sonra .env faylındakı dəyər qüvvəyə minir.',
+  'admin.perMinute': 'dəqiqədə',
+  'admin.save': 'Yadda saxla',
+  'admin.saved': 'Yadda saxlanıldı',
 
   'settings.title': 'Tənzimləmələr',
   'settings.language': 'İnterfeys dili',

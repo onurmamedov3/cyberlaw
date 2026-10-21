@@ -1,7 +1,7 @@
-import {useState} from 'react'
+import {type FormEvent, useEffect, useState} from 'react'
 import {AnimatePresence, motion} from 'motion/react'
-import {Landmark, ListChecks, LoaderCircle, WandSparkles} from 'lucide-react'
-import {del, get, post} from '../lib/api'
+import {CircleCheck, Gauge, Landmark, ListChecks, LoaderCircle, WandSparkles} from 'lucide-react'
+import {del, get, post, put} from '../lib/api'
 import {useT} from '../lib/settings'
 import {usePolling} from '../lib/usePolling'
 import type {LibraryDocument, Requirement} from '../lib/types'
@@ -44,6 +44,8 @@ export function AdminPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <PageHeader icon={<Landmark className="h-6 w-6" />} title={t('admin.title')} subtitle={t('admin.subtitle')} />
 
+      <ChatLimitCard />
+
       <UploadZone
         scope="OFFICIAL"
         onUploaded={(doc) => {
@@ -64,6 +66,80 @@ export function AdminPage() {
         {data && data.length === 0 && <div className="glass p-8 text-center text-muted">{t('docs.empty')}</div>}
       </div>
     </div>
+  )
+}
+
+interface ChatLimit {
+  perMinute: number
+}
+
+/** Questions per user per minute; changes apply at once (e.g. during a presentation). */
+function ChatLimitCard() {
+  const t = useT()
+  const [value, setValue] = useState('')
+  const [saved, setSaved] = useState<number | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<unknown>(null)
+
+  useEffect(() => {
+    get<ChatLimit>('/admin/chat-limit')
+      .then((limit) => {
+        setValue(String(limit.perMinute))
+        setSaved(limit.perMinute)
+      })
+      .catch(setError)
+  }, [])
+
+  const save = async (e: FormEvent) => {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    try {
+      const limit = await put<ChatLimit>('/admin/chat-limit', { perMinute: Number.parseInt(value, 10) })
+      setValue(String(limit.perMinute))
+      setSaved(limit.perMinute)
+    } catch (err) {
+      setError(err)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const unchanged = saved !== null && value === String(saved)
+
+  return (
+    <form onSubmit={save} className="glass mb-6 p-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <Gauge className="h-5 w-5 shrink-0 text-neon" />
+        <div className="min-w-0 flex-1 basis-60">
+          <div className="font-semibold">{t('admin.chatLimit')}</div>
+          <p className="text-xs text-muted">{t('admin.chatLimitHint')}</p>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <input
+            type="number"
+            min={0}
+            max={1000}
+            step={1}
+            required
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="input w-24 py-2 text-center"
+            aria-label={t('admin.chatLimit')}
+          />
+          {t('admin.perMinute')}
+        </label>
+        <button className="btn btn-ghost py-2" disabled={busy || unchanged || value === ''}>
+          {busy ? (
+            <LoaderCircle className="h-4 w-4 animate-spin" />
+          ) : unchanged ? (
+            <CircleCheck className="h-4 w-4" />
+          ) : null}
+          {unchanged ? t('admin.saved') : t('admin.save')}
+        </button>
+      </div>
+      <ErrorNote error={error} className="mt-3" />
+    </form>
   )
 }
 
