@@ -44,6 +44,11 @@ public class ChatService {
 
 	public static final int MAX_QUESTION = 2000;
 
+	private static final int FOLLOW_UP_MAX_WORDS = 6;
+
+	/** "[2]" as written by the model (the same pattern as citedIndexes() in the frontend). */
+	private static final String CITATION = "\\s*\\[\\d{1,2}\\](?!\\()";
+
 	private final ChatModel chatModel;
 
 	private final ChatMemory chatMemory;
@@ -77,9 +82,10 @@ public class ChatService {
 		boolean smallTalk = SmallTalk.matches(question);
 
 		return Flux.defer(() -> {
-			List<Source> sources = smallTalk ? List.of()
-					: retrieval.search(question, userId, request.scope() != null ? request.scope() : SearchScope.BOTH);
 			List<Message> history = chatMemory.get(memoryKey);
+			List<Source> sources = smallTalk ? List.of()
+					: retrieval.search(searchQuery(question, history), userId,
+							request.scope() != null ? request.scope() : SearchScope.BOTH);
 			ServerSentEvent<Object> sourcesEvent = event("sources", sources);
 
 			if (!smallTalk && sources.isEmpty() && history.isEmpty()) {
@@ -90,7 +96,7 @@ public class ChatService {
 			List<Message> messages = new ArrayList<>();
 			messages.add(new SystemMessage(smallTalk ? Prompts.smallTalkSystem(request.language())
 					: Prompts.chatSystem(sources, request.language())));
-			messages.addAll(history);
+			messages.addAll(withoutCitations(history));
 			messages.add(new UserMessage(question));
 
 			StringBuilder answer = new StringBuilder();
@@ -108,6 +114,33 @@ public class ChatService {
 
 	public void clear(UUID userId, String conversationId) {
 		chatMemory.clear(userId + ":" + conversationId);
+	}
+
+	/**
+	 * A short follow-up such as "and the penalties?" means little on its own, so it is searched together
+	 * with the previous question. Longer questions are searched as they are.
+	 */
+	static String searchQuery(String question, List<Message> history) {
+		if (question.split("\\s+").length > FOLLOW_UP_MAX_WORDS) {
+			return question;
+		}
+		for (int i = history.size() - 1; i >= 0; i--) {
+			if (history.get(i) instanceof UserMessage previous) {
+				return previous.getText() + "\n" + question;
+			}
+		}
+		return question;
+	}
+
+	/**
+	 * Earlier answers cite earlier sources. Their [1], [2] would now point to the new sources, which use the
+	 * same numbers, so the markers are removed from the history sent to Gemini.
+	 */
+	static List<Message> withoutCitations(List<Message> history) {
+		return history.stream()
+			.map(m -> m instanceof AssistantMessage answer
+					? new AssistantMessage(answer.getText().replaceAll(CITATION, "")) : m)
+			.toList();
 	}
 
 	private static String textOf(ChatResponse response) {
