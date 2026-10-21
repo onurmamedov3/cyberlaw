@@ -1,5 +1,5 @@
 import {createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState} from 'react'
-import {dictionaries, type Lang, type TKey} from './i18n'
+import {dictionaries, format, type Lang, type TKey} from './i18n'
 
 interface Settings {
   lang: Lang
@@ -9,7 +9,7 @@ interface Settings {
 interface SettingsContextValue extends Settings {
   setLang: (lang: Lang) => void
   setAnimations: (on: boolean) => void
-  t: (key: TKey) => string
+  t: (key: TKey, params?: Record<string, unknown>) => string
 }
 
 const STORAGE_KEY = 'cyberlaw.settings'
@@ -34,7 +34,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle('no-anim', !settings.animations)
   }, [settings])
 
-  const t = useCallback((key: TKey) => dictionaries[settings.lang][key] ?? key, [settings.lang])
+  const t = useCallback(
+    (key: TKey, params?: Record<string, unknown>) => format(dictionaries[settings.lang][key] ?? key, params),
+    [settings.lang],
+  )
 
   const value = useMemo<SettingsContextValue>(
     () => ({

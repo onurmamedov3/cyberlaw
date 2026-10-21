@@ -8,14 +8,15 @@ import type {LibraryDocument, Requirement} from '../lib/types'
 import {PageHeader} from '../components/PageHeader'
 import {UploadZone} from '../components/UploadZone'
 import {DocumentCard} from '../components/DocumentCard'
+import {ErrorNote} from '../components/ErrorNote'
 
 export function AdminPage() {
   const t = useT()
-  const { data, setData, poll } = usePolling(
+  const { data, setData, poll, error: loadError } = usePolling(
     () => get<LibraryDocument[]>('/documents').then((docs) => docs.filter((d) => d.scope === 'OFFICIAL')),
     (docs) => docs.some((d) => d.status === 'PROCESSING' || d.requirementsStatus === 'EXTRACTING'),
   )
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
 
   const replace = (doc: LibraryDocument) => setData((all) => all?.map((d) => (d.id === doc.id ? doc : d)) ?? null)
 
@@ -25,13 +26,18 @@ export function AdminPage() {
       replace(await post<LibraryDocument>(`/admin/documents/${id}/requirements`))
       poll()
     } catch (e) {
-      setError((e as Error).message)
+      setError(e)
     }
   }
 
   const remove = async (id: string) => {
-    await del(`/documents/${id}`)
-    setData((all) => all?.filter((d) => d.id !== id) ?? null)
+    setError(null)
+    try {
+      await del(`/documents/${id}`)
+      setData((all) => all?.filter((d) => d.id !== id) ?? null)
+    } catch (e) {
+      setError(e)
+    }
   }
 
   return (
@@ -45,7 +51,7 @@ export function AdminPage() {
           poll()
         }}
       />
-      {error && <div className="mt-4 rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-red-200">{error}</div>}
+      <ErrorNote error={error ?? loadError} className="mt-4" />
 
       <div className="mt-8 grid gap-3">
         <AnimatePresence>
@@ -64,11 +70,20 @@ export function AdminPage() {
 function ChecklistControls({ doc, onGenerate }: { doc: LibraryDocument; onGenerate: () => void }) {
   const t = useT()
   const [items, setItems] = useState<Requirement[] | null>(null)
+  const [error, setError] = useState<unknown>(null)
   const extracting = doc.requirementsStatus === 'EXTRACTING'
 
   const toggle = async () => {
-    if (items) setItems(null)
-    else setItems(await get<Requirement[]>(`/compliance/laws/${doc.id}/requirements`))
+    setError(null)
+    if (items) {
+      setItems(null)
+      return
+    }
+    try {
+      setItems(await get<Requirement[]>(`/compliance/laws/${doc.id}/requirements`))
+    } catch (e) {
+      setError(e)
+    }
   }
 
   return (
@@ -89,6 +104,7 @@ function ChecklistControls({ doc, onGenerate }: { doc: LibraryDocument; onGenera
           {doc.requirementsStatus === 'READY' ? t('admin.regenerate') : t('admin.generate')}
         </button>
       </div>
+      <ErrorNote error={error} className="mt-3" />
       <AnimatePresence>
         {items && (
           <motion.ol

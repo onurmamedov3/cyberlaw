@@ -3,6 +3,7 @@ import {Link, useParams} from 'react-router-dom'
 import {AnimatePresence, motion} from 'motion/react'
 import {ArrowLeft, BookOpen, ChevronDown, CircleCheck, CircleX, Quote, TriangleAlert} from 'lucide-react'
 import {get} from '../lib/api'
+import {useErrorText} from '../lib/errors'
 import {useT} from '../lib/settings'
 import {usePolling} from '../lib/usePolling'
 import type {ReportDetail, ReportResult, Verdict} from '../lib/types'
@@ -16,6 +17,7 @@ const VERDICT = {
 
 export function ReportPage() {
   const t = useT()
+  const errorText = useErrorText()
   const { id } = useParams()
   const [filter, setFilter] = useState<Verdict | 'ALL'>('ALL')
   const { data, error } = usePolling(
@@ -24,7 +26,7 @@ export function ReportPage() {
     2500,
   )
 
-  if (error) return <div className="p-10 text-center text-red-300">{error}</div>
+  if (error) return <div className="p-10 text-center text-red-300">{errorText(error)}</div>
   if (!data) return <div className="p-10 text-center text-muted">{t('common.loading')}</div>
 
   const { report, results } = data
@@ -53,7 +55,9 @@ export function ReportPage() {
           <h1 className="text-xl font-bold">{report.policyTitle}</h1>
           <div className="label-mono mt-3">{t('comp.law')}</div>
           <h2 className="text-lg font-semibold text-neon-soft">{report.lawTitle}</h2>
-          {report.status === 'FAILED' && <p className="mt-3 text-sm text-red-300">{report.errorMessage}</p>}
+          {report.status === 'FAILED' && (
+            <p className="mt-3 text-sm text-red-300">{errorText({ code: report.errorCode, message: report.errorMessage })}</p>
+          )}
           <div className="mt-5 grid grid-cols-3 gap-3">
             {(['MET', 'PARTIAL', 'MISSING'] as const).map((v) => {
               const count = v === 'MET' ? report.met : v === 'PARTIAL' ? report.partial : report.missing

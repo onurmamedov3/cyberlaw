@@ -17,6 +17,7 @@ export interface LibraryDocument {
   filename: string
   scope: DocScope
   status: DocStatus
+  errorCode: string | null
   errorMessage: string | null
   chunkCount: number
   language: string | null
@@ -49,6 +50,7 @@ export interface ChatMessage {
   status: 'searching' | 'streaming' | 'done' | 'error'
   errorCode?: string
   errorMessage?: string
+  errorParams?: Record<string, unknown>
   question?: string
 }
 
@@ -82,6 +84,7 @@ export interface Report {
   partial: number
   missing: number
   score: number | null
+  errorCode: string | null
   errorMessage: string | null
   createdAt: string
   finishedAt: string | null

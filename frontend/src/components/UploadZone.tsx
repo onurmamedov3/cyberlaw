@@ -3,9 +3,10 @@ import {FileUp, LoaderCircle} from 'lucide-react'
 import {upload} from '../lib/api'
 import {useT} from '../lib/settings'
 import type {DocScope, LibraryDocument} from '../lib/types'
+import {ErrorNote} from './ErrorNote'
 
 const ACCEPT = '.pdf,.docx,.doc,.txt,.md,.html,.htm,.rtf,.odt'
-const MAX_BYTES = 10 * 1024 * 1024
+const MAX_MB = 10
 
 /** Drag & drop upload area. */
 export function UploadZone({ scope, onUploaded }: { scope: DocScope; onUploaded: (doc: LibraryDocument) => void }) {
@@ -13,14 +14,14 @@ export function UploadZone({ scope, onUploaded }: { scope: DocScope; onUploaded:
   const input = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
 
   const send = async (files: FileList | null) => {
     const file = files?.[0]
     if (!file) return
     setError(null)
-    if (file.size > MAX_BYTES) {
-      setError(t('docs.formats'))
+    if (file.size > MAX_MB * 1024 * 1024) {
+      setError({ code: 'TOO_LARGE', params: { maxMb: MAX_MB } })
       return
     }
     const form = new FormData()
@@ -30,7 +31,7 @@ export function UploadZone({ scope, onUploaded }: { scope: DocScope; onUploaded:
     try {
       onUploaded(await upload<LibraryDocument>('/documents', form))
     } catch (e) {
-      setError((e as Error).message)
+      setError(e)
     } finally {
       setBusy(false)
       if (input.current) input.current.value = ''
@@ -68,7 +69,7 @@ export function UploadZone({ scope, onUploaded }: { scope: DocScope; onUploaded:
         <div className="text-xs text-muted">{t('docs.formats')}</div>
       </button>
       <input ref={input} type="file" accept={ACCEPT} hidden onChange={(e) => send(e.target.files)} />
-      {error && <div className="mt-3 rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-red-200">{error}</div>}
+      <ErrorNote error={error} className="mt-3" />
     </div>
   )
 }

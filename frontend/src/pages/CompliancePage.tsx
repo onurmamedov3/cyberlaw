@@ -6,6 +6,7 @@ import {del, get, post} from '../lib/api'
 import {useSettings} from '../lib/settings'
 import {usePolling} from '../lib/usePolling'
 import type {Law, LibraryDocument, Report} from '../lib/types'
+import {ErrorNote} from '../components/ErrorNote'
 import {PageHeader} from '../components/PageHeader'
 import {ScoreRing} from '../components/ScoreRing'
 import {StatusBadge} from '../components/StatusBadge'
@@ -13,23 +14,26 @@ import {StatusBadge} from '../components/StatusBadge'
 export function CompliancePage() {
   const { t, lang } = useSettings()
   const navigate = useNavigate()
-  const [laws, setLaws] = useState<Law[]>([])
-  const [policies, setPolicies] = useState<LibraryDocument[]>([])
+  // null while loading, so the "nothing here yet" hints don't flash before the data arrives
+  const [laws, setLaws] = useState<Law[] | null>(null)
+  const [policies, setPolicies] = useState<LibraryDocument[] | null>(null)
+  const [loadError, setLoadError] = useState<unknown>(null)
   const [policyId, setPolicyId] = useState('')
   const [lawId, setLawId] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
+  const [deleteError, setDeleteError] = useState<unknown>(null)
 
-  const { data: reports, setData: setReports } = usePolling(
+  const { data: reports, setData: setReports, error: reportsError } = usePolling(
     () => get<Report[]>('/compliance/reports'),
     (all) => all.some((r) => r.status === 'RUNNING'),
   )
 
   useEffect(() => {
-    get<Law[]>('/compliance/laws').then(setLaws).catch(() => {})
+    get<Law[]>('/compliance/laws').then(setLaws).catch(setLoadError)
     get<LibraryDocument[]>('/documents')
       .then((docs) => setPolicies(docs.filter((d) => d.mine && d.status === 'READY')))
-      .catch(() => {})
+      .catch(setLoadError)
   }, [])
 
   const start = async () => {
@@ -39,15 +43,20 @@ export function CompliancePage() {
       const report = await post<Report>('/compliance/reports', { policyDocumentId: policyId, lawDocumentId: lawId, language: lang })
       navigate(`/compliance/${report.id}`)
     } catch (e) {
-      setError((e as Error).message)
+      setError(e)
     } finally {
       setBusy(false)
     }
   }
 
   const remove = async (id: string) => {
-    await del(`/compliance/reports/${id}`)
-    setReports((all) => all?.filter((r) => r.id !== id) ?? null)
+    setDeleteError(null)
+    try {
+      await del(`/compliance/reports/${id}`)
+      setReports((all) => all?.filter((r) => r.id !== id) ?? null)
+    } catch (e) {
+      setDeleteError(e)
+    }
   }
 
   return (
@@ -60,7 +69,7 @@ export function CompliancePage() {
             <span className="label-mono mb-1.5 block">{t('comp.policy')}</span>
             <select className="input" value={policyId} onChange={(e) => setPolicyId(e.target.value)}>
               <option value="">{t('comp.choosePolicy')}</option>
-              {policies.map((p) => (
+              {policies?.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.title}
                 </option>
@@ -72,7 +81,7 @@ export function CompliancePage() {
             <span className="label-mono mb-1.5 block">{t('comp.law')}</span>
             <select className="input" value={lawId} onChange={(e) => setLawId(e.target.value)}>
               <option value="">{t('comp.chooseLaw')}</option>
-              {laws.map((l) => (
+              {laws?.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.title} ({l.requirementCount})
                 </option>
@@ -84,12 +93,13 @@ export function CompliancePage() {
             {t('comp.run')}
           </button>
         </div>
-        {policies.length === 0 && <p className="mt-4 text-sm text-amber">{t('comp.noPolicies')}</p>}
-        {laws.length === 0 && <p className="mt-2 text-sm text-amber">{t('comp.noLaws')}</p>}
-        {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
+        {policies?.length === 0 && <p className="mt-4 text-sm text-amber">{t('comp.noPolicies')}</p>}
+        {laws?.length === 0 && <p className="mt-2 text-sm text-amber">{t('comp.noLaws')}</p>}
+        <ErrorNote error={error ?? loadError} className="mt-4" />
       </motion.div>
 
       <h2 className="mb-4 mt-12 text-lg font-bold">{t('comp.reports')}</h2>
+      <ErrorNote error={deleteError ?? reportsError} className="mb-4" />
       {reports && reports.length === 0 && <div className="glass p-8 text-center text-muted">{t('comp.noReports')}</div>}
       <div className="space-y-3">
         {reports?.map((r, i) => (

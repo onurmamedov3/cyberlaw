@@ -49,10 +49,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           onSources: (sources) => update(assistantId, () => ({ sources, status: 'streaming' })),
           onToken: (text) => update(assistantId, (m) => ({ text: m.text + text, status: 'streaming' })),
           onDone: () => update(assistantId, () => ({ status: 'done' })),
-          onError: (code, message) => {
-            update(assistantId, () => ({ status: 'error', errorCode: code, errorMessage: message }))
+          onError: (error) => {
+            update(assistantId, () => ({
+              status: 'error',
+              errorCode: error.code,
+              errorMessage: error.message,
+              errorParams: error.params,
+            }))
             // the free tier allows a few requests per minute: retry once automatically
-            if (code === 'RATE_LIMIT' && !autoRetried.current.has(assistantId)) {
+            if (error.code === 'RATE_LIMIT' && !autoRetried.current.has(assistantId)) {
               autoRetried.current.add(assistantId)
               startCountdown(assistantId)
             }
@@ -112,6 +117,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         status: 'searching',
         errorCode: undefined,
         errorMessage: undefined,
+        errorParams: undefined,
       }))
       run(messageId, question)
     },

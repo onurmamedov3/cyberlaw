@@ -3,6 +3,7 @@ import {motion} from 'motion/react'
 import {BookOpen, FolderLock, KeyRound, LoaderCircle, Mail, Radar, User} from 'lucide-react'
 import {useAuth} from '../lib/auth'
 import {useT} from '../lib/settings'
+import {ErrorNote} from '../components/ErrorNote'
 import {Logo} from '../components/Logo'
 import {LanguageSwitch} from '../components/LanguageSwitch'
 
@@ -13,7 +14,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
   const [busy, setBusy] = useState(false)
 
   const submit = async (e: FormEvent) => {
@@ -24,7 +25,7 @@ export function LoginPage() {
       if (mode === 'login') await login(email, password)
       else await register(email, password, name)
     } catch (err) {
-      setError((err as Error).message)
+      setError(err)
     } finally {
       setBusy(false)
     }
@@ -100,9 +101,7 @@ export function LoginPage() {
             </Field>
           </div>
 
-          {error && (
-            <div className="mt-4 rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-red-200">{error}</div>
-          )}
+          <ErrorNote error={error} className="mt-4" />
 
           <button className="btn btn-neon mt-6 w-full py-3" disabled={busy}>
             {busy && <LoaderCircle className="h-4 w-4 animate-spin" />}

@@ -1,4 +1,4 @@
-import type {ReactNode} from 'react'
+import {type ReactNode, useState} from 'react'
 import {AnimatePresence} from 'motion/react'
 import {FileUp, FolderLock, Landmark, ListChecks, ShieldAlert} from 'lucide-react'
 import {del, get} from '../lib/api'
@@ -8,23 +8,30 @@ import type {LibraryDocument} from '../lib/types'
 import {PageHeader} from '../components/PageHeader'
 import {UploadZone} from '../components/UploadZone'
 import {DocumentCard} from '../components/DocumentCard'
+import {ErrorNote} from '../components/ErrorNote'
 
 /** Must match cyberlaw.uploads.max-private-documents in application.yml. */
 const MAX_PRIVATE = 5
 
 export function DocumentsPage() {
   const t = useT()
-  const { data, setData, poll } = usePolling(
+  const { data, setData, poll, error } = usePolling(
     () => get<LibraryDocument[]>('/documents'),
     (docs) => docs.some((d) => d.status === 'PROCESSING'),
   )
+  const [deleteError, setDeleteError] = useState<unknown>(null)
   const docs = data ?? []
   const mine = docs.filter((d) => d.scope === 'PRIVATE')
   const official = docs.filter((d) => d.scope === 'OFFICIAL' && d.status === 'READY')
 
   const remove = async (id: string) => {
-    await del(`/documents/${id}`)
-    setData((all) => all?.filter((d) => d.id !== id) ?? null)
+    setDeleteError(null)
+    try {
+      await del(`/documents/${id}`)
+      setData((all) => all?.filter((d) => d.id !== id) ?? null)
+    } catch (e) {
+      setDeleteError(e)
+    }
   }
 
   return (
@@ -45,6 +52,7 @@ export function DocumentsPage() {
           <p className="mt-1 text-muted">{t('docs.limits')}</p>
         </div>
       </div>
+      <ErrorNote error={deleteError ?? error} className="mt-4" />
 
       <Section
         icon={<FolderLock className="h-5 w-5" />}

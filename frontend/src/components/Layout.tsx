@@ -1,9 +1,10 @@
 import {useState} from 'react'
-import {NavLink, Outlet} from 'react-router-dom'
+import {NavLink, Outlet, useLocation} from 'react-router-dom'
 import {ClipboardCheck, FolderLock, Landmark, LogOut, Menu, MessageSquare, Settings, X} from 'lucide-react'
 import {useAuth} from '../lib/auth'
 import {useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
+import {ErrorBoundary} from './ErrorBoundary'
 import {Logo} from './Logo'
 
 const links: { to: string; label: TKey; icon: typeof MessageSquare; admin?: boolean }[] = [
@@ -17,6 +18,7 @@ const links: { to: string; label: TKey; icon: typeof MessageSquare; admin?: bool
 export function Layout() {
   const { user, logout } = useAuth()
   const t = useT()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
 
   const nav = (
@@ -94,7 +96,10 @@ export function Layout() {
       )}
 
       <main className="min-w-0 flex-1 overflow-y-auto pt-16 md:pt-0">
-        <Outlet />
+        {/* a crash shows a message inside the page; going to another page clears it */}
+        <ErrorBoundary key={location.pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   )

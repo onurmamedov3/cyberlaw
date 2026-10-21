@@ -8,16 +8,29 @@ export const tokenStore = {
   clear: () => localStorage.removeItem(TOKEN_KEY),
 }
 
+/** An error from the backend: a stable code (translated in i18n.ts as "error.CODE"), its English message and params. */
 export class ApiError extends Error {
   status: number
   code: string
+  params: Record<string, unknown>
 
-  constructor(status: number, code: string, message: string) {
+  constructor(status: number, code: string, message: string, params: Record<string, unknown> = {}) {
     super(message)
     this.status = status
     this.code = code
+    this.params = params
   }
 }
+
+/** For responses without our JSON error body (e.g. a proxy error page). */
+function codeForStatus(status: number) {
+  if (status === 401) return 'UNAUTHORIZED'
+  if (status === 403) return 'FORBIDDEN'
+  if (status === 404) return 'NOT_FOUND'
+  return status >= 500 ? 'INTERNAL' : 'BAD_REQUEST'
+}
+
+const networkError = (e: unknown) => new ApiError(0, 'NETWORK', (e as Error).message)
 
 let onUnauthorized: () => void = () => {}
 
@@ -27,17 +40,19 @@ export function setUnauthorizedHandler(handler: () => void) {
 }
 
 async function toError(res: Response): Promise<ApiError> {
-  let code = 'ERROR'
+  let code = codeForStatus(res.status)
   let message = res.statusText || 'Request failed'
+  let params: Record<string, unknown> = {}
   try {
     const body = await res.json()
     code = body.code ?? code
     message = body.message ?? message
+    params = body.params ?? params
   } catch {
     /* not JSON */
   }
   if (res.status === 401) onUnauthorized()
-  return new ApiError(res.status, code, message)
+  return new ApiError(res.status, code, message, params)
 }
 
 function authHeaders(): Record<string, string> {
@@ -47,14 +62,19 @@ function authHeaders(): Record<string, string> {
 
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const isForm = options.body instanceof FormData
-  const res = await fetch(`/api${path}`, {
-    ...options,
-    headers: {
-      ...(isForm || !options.body ? {} : { 'Content-Type': 'application/json' }),
-      ...authHeaders(),
-      ...(options.headers ?? {}),
-    },
-  })
+  let res: Response
+  try {
+    res = await fetch(`/api${path}`, {
+      ...options,
+      headers: {
+        ...(isForm || !options.body ? {} : { 'Content-Type': 'application/json' }),
+        ...authHeaders(),
+        ...(options.headers ?? {}),
+      },
+    })
+  } catch (e) {
+    throw networkError(e)
+  }
   if (!res.ok) throw await toError(res)
   if (res.status === 204) return undefined as T
   return (await res.json()) as T
@@ -73,7 +93,7 @@ export interface StreamHandlers {
   onSources: (sources: Source[]) => void
   onToken: (text: string) => void
   onDone: () => void
-  onError: (code: string, message: string) => void
+  onError: (error: ApiError) => void
 }
 
 /**
@@ -94,12 +114,11 @@ export async function streamChat(
       signal,
     })
   } catch (e) {
-    if ((e as Error).name !== 'AbortError') handlers.onError('NETWORK', (e as Error).message)
+    if ((e as Error).name !== 'AbortError') handlers.onError(networkError(e))
     return
   }
   if (!res.ok || !res.body) {
-    const err = await toError(res)
-    handlers.onError(err.code, err.message)
+    handlers.onError(await toError(res))
     return
   }
 
@@ -135,7 +154,7 @@ export async function streamChat(
         break
       case 'error':
         finished = true
-        handlers.onError(payload.code ?? 'AI_ERROR', payload.message ?? 'Error')
+        handlers.onError(new ApiError(res.status, payload.code ?? 'AI_ERROR', payload.message ?? 'Error', payload.params))
         break
     }
   }
@@ -154,6 +173,6 @@ export async function streamChat(
     if (buffer.trim()) dispatch(buffer)
     if (!finished) handlers.onDone()
   } catch (e) {
-    if ((e as Error).name !== 'AbortError') handlers.onError('NETWORK', (e as Error).message)
+    if ((e as Error).name !== 'AbortError') handlers.onError(networkError(e))
   }
 }

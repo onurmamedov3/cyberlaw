@@ -16,6 +16,7 @@ import {
     TriangleAlert
 } from 'lucide-react'
 import {useChat} from '../lib/chat'
+import {useErrorText} from '../lib/errors'
 import {useSettings, useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
 import type {ChatMessage, SearchScope, Source} from '../lib/types'
@@ -300,6 +301,7 @@ function UserBubble({ text }: { text: string }) {
 
 function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onOpenSource: (s: Source) => void }) {
   const t = useT()
+  const errorText = useErrorText()
   const { retry, retryCountdown } = useChat()
   const sources = message.sources ?? []
   // only the sources the finished answer cites (retrieval may return unused passages)
@@ -350,7 +352,7 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
             <span className="flex-1">
               {message.errorCode === 'RATE_LIMIT' && retryCountdown !== null
                 ? `${t('chat.retryIn')} ${retryCountdown}${t('chat.seconds')}`
-                : message.errorMessage}
+                : errorText({ code: message.errorCode, message: message.errorMessage, params: message.errorParams })}
             </span>
             <button className="btn btn-danger py-1.5 text-xs" onClick={() => retry(message.id)}>
               <RefreshCw className="h-3.5 w-3.5" /> {t('chat.retry')}

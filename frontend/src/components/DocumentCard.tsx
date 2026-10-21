@@ -1,6 +1,7 @@
 import type {ReactNode} from 'react'
 import {motion} from 'motion/react'
 import {Clock, FileText, Trash} from 'lucide-react'
+import {useErrorText} from '../lib/errors'
 import {useT} from '../lib/settings'
 import type {LibraryDocument} from '../lib/types'
 import {StatusBadge} from './StatusBadge'
@@ -19,6 +20,7 @@ export function DocumentCard({
   children?: ReactNode
 }) {
   const t = useT()
+  const errorText = useErrorText()
   return (
     <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="glass glass-hover p-4">
       <div className="flex items-start gap-3">
@@ -44,7 +46,9 @@ export function DocumentCard({
               </span>
             )}
           </div>
-          {doc.status === 'FAILED' && doc.errorMessage && <div className="mt-2 text-xs text-red-300">{doc.errorMessage}</div>}
+          {doc.status === 'FAILED' && (doc.errorCode || doc.errorMessage) && (
+            <div className="mt-2 text-xs text-red-300">{errorText({ code: doc.errorCode, message: doc.errorMessage })}</div>
+          )}
         </div>
         {onDelete && (
           <button
