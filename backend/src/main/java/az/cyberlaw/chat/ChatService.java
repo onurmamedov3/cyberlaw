@@ -65,9 +65,13 @@ public class ChatService {
 		this.props = props;
 	}
 
+	/**
+	 * regenerate: write a new answer to the last question, replacing the previous one. It is a Boolean, not a
+	 * boolean, so it may be left out: Jackson 3 rejects a missing primitive.
+	 */
 	public record ChatRequest(@NotBlank @Size(max = MAX_QUESTION) String question,
 			@NotNull @Pattern(regexp = "[A-Za-z0-9-]{1,64}") String conversationId, SearchScope scope,
-			String language) {
+			String language, Boolean regenerate) {
 	}
 
 	public Flux<ServerSentEvent<Object>> stream(UUID userId, ChatRequest request) {
@@ -82,6 +86,9 @@ public class ChatService {
 		boolean smallTalk = SmallTalk.matches(question);
 
 		return Flux.defer(() -> {
+			if (Boolean.TRUE.equals(request.regenerate())) {
+				forgetLastAnswer(memoryKey, question);
+			}
 			List<Message> history = chatMemory.get(memoryKey);
 			List<Source> sources = smallTalk ? List.of()
 					: retrieval.search(searchQuery(question, history), userId,
@@ -114,6 +121,20 @@ public class ChatService {
 
 	public void clear(UUID userId, String conversationId) {
 		chatMemory.clear(userId + ":" + conversationId);
+	}
+
+	/** Removes the last question and answer, if they are this question's, so a new answer replaces them. */
+	private void forgetLastAnswer(String memoryKey, String question) {
+		List<Message> history = chatMemory.get(memoryKey);
+		int size = history.size();
+		if (size >= 2 && history.get(size - 2) instanceof UserMessage last && question.equals(last.getText())
+				&& history.get(size - 1) instanceof AssistantMessage) {
+			List<Message> earlier = List.copyOf(history.subList(0, size - 2));
+			chatMemory.clear(memoryKey);
+			if (!earlier.isEmpty()) {
+				chatMemory.add(memoryKey, earlier);
+			}
+		}
 	}
 
 	/**

@@ -48,6 +48,8 @@ export interface ChatMessage {
   text: string
   sources?: Source[]
   status: 'searching' | 'streaming' | 'done' | 'error'
+  /** The user stopped the answer before it was finished. */
+  stopped?: boolean
   errorCode?: string
   errorMessage?: string
   errorParams?: Record<string, unknown>

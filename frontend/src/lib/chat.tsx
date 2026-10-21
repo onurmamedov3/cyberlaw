@@ -20,7 +20,12 @@ interface ChatContextValue {
   countdown: { id: string; seconds: number } | null
   setScope: (scope: SearchScope) => void
   ask: (question: string) => void
+  /** Stops the answer being written; what has arrived so far stays. */
+  stop: () => void
+  /** Asks again after an error. */
   retry: (messageId: string) => void
+  /** A new answer to the last question, replacing the previous one. */
+  regenerate: (messageId: string) => void
   newChat: () => void
 }
 
@@ -39,6 +44,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [countdown, setCountdown] = useState<ChatContextValue['countdown']>(null)
   const conversationId = useRef(newId())
   const abort = useRef<AbortController | null>(null)
+  const activeId = useRef<string | null>(null)
   const retryTimer = useRef<number | null>(null)
   const autoRetried = useRef(new Set<string>())
 
@@ -48,11 +54,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setMessages((all) => all.map((m) => (m.id === id ? { ...m, ...patch(m) } : m)))
 
   const run = useCallback(
-    (assistantId: string, question: string) => {
+    (assistantId: string, question: string, regenerate = false) => {
       const controller = new AbortController()
       abort.current = controller
+      activeId.current = assistantId
       streamChat(
-        { question, conversationId: conversationId.current, scope, language: lang },
+        { question, conversationId: conversationId.current, scope, language: lang, regenerate },
         {
           onSources: (sources) => update(assistantId, () => ({ sources, status: 'streaming' })),
           onToken: (text) => update(assistantId, (m) => ({ text: m.text + text, status: 'streaming' })),
@@ -116,8 +123,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const messagesRef = useRef(messages)
   messagesRef.current = messages
 
-  const retry = useCallback(
-    (messageId: string) => {
+  const askAgain = useCallback(
+    (messageId: string, regenerate: boolean) => {
       stopCountdown()
       const question = messagesRef.current.find((m) => m.id === messageId)?.question
       if (!question) return
@@ -125,16 +132,27 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         text: '',
         sources: undefined,
         status: 'searching',
+        stopped: undefined,
         errorCode: undefined,
         errorMessage: undefined,
         errorParams: undefined,
       }))
-      run(messageId, question)
+      run(messageId, question, regenerate)
     },
     [run],
   )
+  const retry = useCallback((messageId: string) => askAgain(messageId, false), [askAgain])
+  const regenerate = useCallback((messageId: string) => askAgain(messageId, true), [askAgain])
   const retryRef = useRef(retry)
   retryRef.current = retry
+
+  const stop = useCallback(() => {
+    abort.current?.abort()
+    const id = activeId.current
+    if (id) {
+      update(id, (m) => (m.status === 'searching' || m.status === 'streaming' ? { status: 'done', stopped: true } : {}))
+    }
+  }, [])
 
   const newChat = useCallback(() => {
     abort.current?.abort()
@@ -148,8 +166,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => () => stopCountdown(), [])
 
   const value = useMemo(
-    () => ({ messages, scope, busy, countdown, setScope, ask, retry, newChat }),
-    [messages, scope, busy, countdown, ask, retry, newChat],
+    () => ({ messages, scope, busy, countdown, setScope, ask, stop, retry, regenerate, newChat }),
+    [messages, scope, busy, countdown, ask, stop, retry, regenerate, newChat],
   )
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
 }

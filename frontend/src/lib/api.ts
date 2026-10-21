@@ -102,7 +102,7 @@ export interface StreamHandlers {
  * (EventSource cannot send POST bodies or Authorization headers).
  */
 export async function streamChat(
-  body: { question: string; conversationId: string; scope: SearchScope; language: string },
+  body: { question: string; conversationId: string; scope: SearchScope; language: string; regenerate?: boolean },
   handlers: StreamHandlers,
   signal?: AbortSignal,
 ) {

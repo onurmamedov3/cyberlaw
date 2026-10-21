@@ -1,7 +1,8 @@
 import {useState} from 'react'
-import {NavLink, Outlet, useLocation} from 'react-router-dom'
-import {ClipboardCheck, FolderLock, Landmark, LogOut, Menu, MessageSquare, Settings, X} from 'lucide-react'
+import {NavLink, Outlet, useLocation, useNavigate} from 'react-router-dom'
+import {ClipboardCheck, FolderLock, Landmark, LogOut, Menu, MessageSquare, Settings, SquarePen, X} from 'lucide-react'
 import {useAuth} from '../lib/auth'
+import {useChat} from '../lib/chat'
 import {useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
 import {ErrorBoundary} from './ErrorBoundary'
@@ -19,7 +20,21 @@ export function Layout() {
   const { user, logout } = useAuth()
   const t = useT()
   const location = useLocation()
+  const navigate = useNavigate()
+  const { newChat } = useChat()
   const [open, setOpen] = useState(false)
+
+  const startNewChat = () => {
+    newChat()
+    navigate('/chat')
+    setOpen(false)
+  }
+
+  const newChatButton = (
+    <button onClick={startNewChat} className="btn btn-ghost mb-4 w-full justify-start">
+      <SquarePen className="h-4 w-4" /> {t('chat.newChat')}
+    </button>
+  )
 
   const nav = (
     <nav className="flex flex-1 flex-col gap-1">
@@ -66,9 +81,10 @@ export function Layout() {
     <div className="flex h-full">
       {/* desktop sidebar */}
       <aside className="glass m-3 mr-0 hidden w-64 shrink-0 flex-col p-4 md:flex">
-        <div className="mb-8 px-1 pt-1">
+        <div className="mb-6 px-1 pt-1">
           <Logo />
         </div>
+        {newChatButton}
         {nav}
         {footer}
       </aside>
@@ -76,19 +92,30 @@ export function Layout() {
       {/* mobile top bar + drawer */}
       <div className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-line bg-void/80 px-4 py-3 backdrop-blur md:hidden">
         <Logo />
-        <button className="btn btn-ghost px-2.5" onClick={() => setOpen(true)} aria-label="Menu">
-          <Menu className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="btn btn-ghost px-2.5"
+            onClick={startNewChat}
+            aria-label={t('chat.newChat')}
+            title={t('chat.newChat')}
+          >
+            <SquarePen className="h-5 w-5" />
+          </button>
+          <button className="btn btn-ghost px-2.5" onClick={() => setOpen(true)} aria-label="Menu">
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
       </div>
       {open && (
         <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={() => setOpen(false)}>
           <aside className="glass absolute inset-y-3 left-3 flex w-72 flex-col p-4" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-6 flex items-center justify-between">
               <Logo />
               <button onClick={() => setOpen(false)} aria-label="Close">
                 <X className="h-5 w-5 text-muted" />
               </button>
             </div>
+            {newChatButton}
             {nav}
             {footer}
           </aside>

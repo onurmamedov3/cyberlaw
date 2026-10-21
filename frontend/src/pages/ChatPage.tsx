@@ -4,18 +4,21 @@ import {
     ArrowRight,
     Blend,
     BookOpen,
+    Check,
     ChevronRight,
+    Copy,
     FileText,
     Landmark,
-    LoaderCircle,
     LockKeyhole,
-    Plus,
     RefreshCw,
+    RotateCcw,
     ShieldCheck,
     Sparkles,
+    Square,
     TriangleAlert
 } from 'lucide-react'
 import {useChat} from '../lib/chat'
+import {copyText} from '../lib/clipboard'
 import {useErrorText} from '../lib/errors'
 import {useSettings, useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
@@ -63,7 +66,7 @@ const SUGGESTIONS: { key: TKey; icon: typeof Landmark; tile: string; label: stri
 
 export function ChatPage() {
   const t = useT()
-  const { messages, ask, busy } = useChat()
+  const { messages, ask, busy, stop } = useChat()
   const [input, setInput] = useState('')
   const [openSource, setOpenSource] = useState<Source | null>(null)
   const page = useRef<HTMLDivElement>(null)
@@ -129,7 +132,12 @@ export function ChatPage() {
               m.role === 'user' ? (
                 <UserBubble key={m.id} text={m.text} />
               ) : (
-                <AssistantMessage key={m.id} message={m} onOpenSource={setOpenSource} />
+                <AssistantMessage
+                  key={m.id}
+                  message={m}
+                  last={m === messages[messages.length - 1]}
+                  onOpenSource={setOpenSource}
+                />
               ),
             )
           )}
@@ -150,13 +158,19 @@ export function ChatPage() {
                 maxLength={2000}
                 className="max-h-[200px] flex-1 resize-none bg-transparent py-3 text-[15px] outline-none placeholder:text-muted/80"
               />
+              {/* while an answer is being written, the send button stops it */}
               <button
                 className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-violet-500 text-white shadow-[0_0_22px_-4px_rgb(56_189_248/0.8)] transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
-                disabled={busy || !input.trim()}
-                onClick={() => send()}
-                aria-label={t('chat.send')}
+                disabled={!busy && !input.trim()}
+                onClick={() => (busy ? stop() : send())}
+                aria-label={busy ? t('chat.stop') : t('chat.send')}
+                title={busy ? t('chat.stop') : t('chat.send')}
               >
-                {busy ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <ChevronRight className="h-6 w-6" strokeWidth={2.5} />}
+                {busy ? (
+                  <Square className="h-4 w-4 fill-current" />
+                ) : (
+                  <ChevronRight className="h-6 w-6" strokeWidth={2.5} />
+                )}
               </button>
             </div>
           </div>
@@ -172,17 +186,15 @@ export function ChatPage() {
   )
 }
 
-/** Floating search-scope switch (centred) with the "new chat" button on the right; no bar behind it. */
+/** Floating search-scope switch (centred), no bar behind it. "New chat" is in the menu. */
 function ChatHeader() {
   const t = useT()
-  const { messages, scope, setScope, newChat } = useChat()
+  const { scope, setScope } = useChat()
 
   return (
     // the empty corners let clicks through to the content scrolling underneath
     <header className="pointer-events-none sticky top-16 z-20 md:top-0">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4 sm:px-6">
-        <div />
-
+      <div className="flex justify-center px-4 py-4 sm:px-6">
         <div className="pointer-events-auto flex items-center rounded-full border border-line bg-panel/80 p-1.5 shadow-[0_0_30px_-12px_rgb(34_211_238/0.5)] backdrop-blur-xl">
           {SCOPES.map(({ scope: s, icon: Icon }) => {
             const active = scope === s
@@ -208,19 +220,6 @@ function ChatHeader() {
               </button>
             )
           })}
-        </div>
-
-        <div className="flex justify-end">
-          {messages.length > 0 && (
-            <button
-              className="btn-round pointer-events-auto backdrop-blur-xl"
-              onClick={newChat}
-              title={t('chat.newChat')}
-              aria-label={t('chat.newChat')}
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          )}
         </div>
       </div>
     </header>
@@ -299,10 +298,18 @@ function UserBubble({ text }: { text: string }) {
   )
 }
 
-function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onOpenSource: (s: Source) => void }) {
+function AssistantMessage({
+  message,
+  last,
+  onOpenSource,
+}: {
+  message: ChatMessage
+  last: boolean
+  onOpenSource: (s: Source) => void
+}) {
   const t = useT()
   const errorText = useErrorText()
-  const { retry, countdown } = useChat()
+  const { busy, retry, regenerate, countdown } = useChat()
   const sources = message.sources ?? []
   // only the sources the finished answer cites (retrieval may return unused passages)
   const cited = citedIndexes(message.text)
@@ -333,18 +340,14 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
           )}
         </AnimatePresence>
 
-        {shown.length > 0 && (
-          <div className="label-mono mb-2 text-acid">
-            ✓ {shown.length} {t('chat.foundSources')}
-          </div>
-        )}
-
         {message.text && (
           <div>
             <Markdown text={message.text} onCite={openIndex} />
             {message.status === 'streaming' && <span className="typing-cursor" />}
           </div>
         )}
+
+        {message.stopped && <p className="mt-2 text-xs italic text-muted">{t('chat.stopped')}</p>}
 
         {message.status === 'error' && (
           <div className="mt-2 flex flex-wrap items-center gap-3 rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-red-200">
@@ -364,7 +367,9 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
 
         {shown.length > 0 && (
           <div className="mt-4">
-            <div className="label-mono mb-2">{t('chat.sources')}</div>
+            <div className="label-mono mb-2">
+              {t('chat.sources')} · {shown.length}
+            </div>
             <div className="grid gap-2 sm:grid-cols-2">
               {shown.map((s) => (
                 <button
@@ -392,7 +397,54 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
             </div>
           </div>
         )}
+
+        {message.status === 'done' && (
+          <AnswerActions
+            text={message.text}
+            onRegenerate={last ? () => regenerate(message.id) : undefined}
+            disabled={busy}
+          />
+        )}
       </div>
     </motion.div>
+  )
+}
+
+/** Copy, and Regenerate for the latest answer. */
+function AnswerActions({
+  text,
+  onRegenerate,
+  disabled,
+}: {
+  text: string
+  onRegenerate?: () => void
+  disabled: boolean
+}) {
+  const t = useT()
+  const [copied, setCopied] = useState(false)
+
+  const copy = async () => {
+    await copyText(text)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1500)
+  }
+
+  const action =
+    'inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted transition-colors hover:bg-white/5 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent'
+  return (
+    <div className="mt-3 flex items-center gap-1">
+      {text && (
+        <button className={action} onClick={copy}>
+          {copied ? <Check className="h-3.5 w-3.5 text-acid" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? t('chat.copied') : t('chat.copy')}
+        </button>
+      )}
+      {onRegenerate && (
+        <button className={action} onClick={onRegenerate} disabled={disabled}>
+          <RotateCcw className="h-3.5 w-3.5" />
+          {t('chat.regenerate')}
+        </button>
+      )}
+    </div>
   )
 }
