@@ -1,8 +1,8 @@
 package az.cyberlaw.chat;
 
 import az.cyberlaw.chat.ChatService.ChatRequest;
-import az.cyberlaw.common.ApiException;
 import az.cyberlaw.security.CurrentUser;
+import jakarta.validation.Valid;
 import reactor.core.publisher.Flux;
 
 import org.springframework.http.MediaType;
@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/chat")
 public class ChatController {
 
-	private static final int MAX_QUESTION = 2000;
-
 	private final ChatService chatService;
 
 	public ChatController(ChatService chatService) {
@@ -30,16 +28,8 @@ public class ChatController {
 	}
 
 	@PostMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public Flux<ServerSentEvent<Object>> stream(@AuthenticationPrincipal Jwt jwt, @RequestBody ChatRequest request) {
-		if (request.question() == null || request.question().isBlank()) {
-			throw ApiException.badRequest("Please type a question.");
-		}
-		if (request.question().length() > MAX_QUESTION) {
-			throw ApiException.badRequest("The question is too long (max " + MAX_QUESTION + " characters).");
-		}
-		if (request.conversationId() == null || !request.conversationId().matches("[A-Za-z0-9-]{1,64}")) {
-			throw ApiException.badRequest("Invalid conversation id.");
-		}
+	public Flux<ServerSentEvent<Object>> stream(@AuthenticationPrincipal Jwt jwt,
+			@Valid @RequestBody ChatRequest request) {
 		return chatService.stream(CurrentUser.of(jwt).id(), request);
 	}
 

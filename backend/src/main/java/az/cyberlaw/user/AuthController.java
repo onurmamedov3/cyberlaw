@@ -3,6 +3,7 @@ package az.cyberlaw.user;
 import java.util.Locale;
 
 import az.cyberlaw.common.ApiException;
+import az.cyberlaw.common.ErrorCode;
 import az.cyberlaw.security.CurrentUser;
 import az.cyberlaw.security.JwtService;
 import jakarta.validation.Valid;
@@ -10,7 +11,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -56,10 +57,17 @@ public class AuthController {
 	public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
 		String email = normalize(request.email());
 		if (users.existsByEmail(email)) {
-			throw ApiException.conflict("An account with this email already exists.");
+			throw new ApiException(ErrorCode.EMAIL_TAKEN);
 		}
-		AppUser user = users.save(new AppUser(email, passwordEncoder.encode(request.password()),
-				request.displayName().trim(), Role.USER));
+		AppUser user;
+		try {
+			user = users.save(new AppUser(email, passwordEncoder.encode(request.password()),
+					request.displayName().trim(), Role.USER));
+		}
+		catch (DataIntegrityViolationException ex) {
+			// the same email registered a moment ago (e.g. a double click)
+			throw new ApiException(ErrorCode.EMAIL_TAKEN);
+		}
 		return new AuthResponse(jwtService.issueToken(user), UserDto.of(user));
 	}
 
@@ -67,7 +75,7 @@ public class AuthController {
 	public AuthResponse login(@Valid @RequestBody LoginRequest request) {
 		AppUser user = users.findByEmail(normalize(request.email()))
 			.filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
-			.orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Wrong email or password."));
+			.orElseThrow(() -> new ApiException(ErrorCode.WRONG_CREDENTIALS));
 		return new AuthResponse(jwtService.issueToken(user), UserDto.of(user));
 	}
 
@@ -75,7 +83,7 @@ public class AuthController {
 	public UserDto me(@AuthenticationPrincipal Jwt jwt) {
 		return users.findById(CurrentUser.of(jwt).id())
 			.map(UserDto::of)
-			.orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Account no longer exists."));
+			.orElseThrow(() -> new ApiException(ErrorCode.ACCOUNT_GONE));
 	}
 
 	private static String normalize(String email) {

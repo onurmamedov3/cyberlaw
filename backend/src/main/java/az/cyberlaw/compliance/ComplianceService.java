@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import az.cyberlaw.ai.AiErrorCode;
 import az.cyberlaw.ai.AiException;
 import az.cyberlaw.common.ApiException;
+import az.cyberlaw.common.ErrorCode;
 import az.cyberlaw.compliance.ComplianceDtos.LawDto;
 import az.cyberlaw.compliance.ComplianceDtos.ReportDetailDto;
 import az.cyberlaw.compliance.ComplianceDtos.ReportDto;
@@ -79,12 +80,13 @@ public class ComplianceService {
 	/** Admin action: build the checklist for an official law (runs in the background). */
 	public DocumentDto startExtraction(CurrentUser admin, UUID lawId) {
 		requireAi();
-		LibraryDocument law = documents.findById(lawId).orElseThrow(() -> ApiException.notFound("Document not found."));
+		LibraryDocument law = documents.findById(lawId)
+			.orElseThrow(() -> new ApiException(ErrorCode.DOCUMENT_NOT_FOUND));
 		if (law.getScope() != DocumentScope.OFFICIAL || law.getStatus() != DocumentStatus.READY) {
-			throw ApiException.badRequest("Only indexed documents of the Official Library can have a checklist.");
+			throw new ApiException(ErrorCode.CHECKLIST_NOT_ALLOWED);
 		}
 		if (law.getRequirementsStatus() == RequirementsStatus.EXTRACTING) {
-			throw ApiException.conflict("The checklist is already being generated.");
+			throw new ApiException(ErrorCode.CHECKLIST_RUNNING);
 		}
 		law.setRequirementsStatus(RequirementsStatus.EXTRACTING);
 		documents.save(law);
@@ -96,11 +98,11 @@ public class ComplianceService {
 		requireAi();
 		LibraryDocument policy = documentService.getVisible(user, policyId);
 		if (policy.getStatus() != DocumentStatus.READY) {
-			throw ApiException.badRequest("The policy document is not indexed yet.");
+			throw new ApiException(ErrorCode.POLICY_NOT_READY);
 		}
-		LibraryDocument law = documents.findById(lawId).orElseThrow(() -> ApiException.notFound("Law not found."));
+		LibraryDocument law = documents.findById(lawId).orElseThrow(() -> new ApiException(ErrorCode.LAW_NOT_FOUND));
 		if (law.getScope() != DocumentScope.OFFICIAL || law.getRequirementsStatus() != RequirementsStatus.READY) {
-			throw ApiException.badRequest("This law has no compliance checklist yet.");
+			throw new ApiException(ErrorCode.LAW_NO_CHECKLIST);
 		}
 		int total = (int) requirements.countByDocumentId(lawId);
 		String lang = "az".equals(language) ? "az" : "en";
@@ -144,7 +146,7 @@ public class ComplianceService {
 	private ComplianceReport owned(CurrentUser user, UUID id) {
 		return reports.findById(id)
 			.filter(r -> r.getOwnerId().equals(user.id()))
-			.orElseThrow(() -> ApiException.notFound("Report not found."));
+			.orElseThrow(() -> new ApiException(ErrorCode.REPORT_NOT_FOUND));
 	}
 
 	private Map<UUID, String> titles(List<UUID> ids) {

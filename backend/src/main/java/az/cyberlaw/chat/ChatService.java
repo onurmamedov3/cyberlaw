@@ -12,6 +12,10 @@ import az.cyberlaw.document.LanguageDetector;
 import az.cyberlaw.rag.RetrievalService;
 import az.cyberlaw.rag.SearchScope;
 import az.cyberlaw.rag.Source;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -37,6 +41,8 @@ public class ChatService {
 
 	private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
+	public static final int MAX_QUESTION = 2000;
+
 	private final ChatModel chatModel;
 
 	private final ChatMemory chatMemory;
@@ -53,7 +59,9 @@ public class ChatService {
 		this.props = props;
 	}
 
-	public record ChatRequest(String question, String conversationId, SearchScope scope, String language) {
+	public record ChatRequest(@NotBlank @Size(max = MAX_QUESTION) String question,
+			@NotNull @Pattern(regexp = "[A-Za-z0-9-]{1,64}") String conversationId, SearchScope scope,
+			String language) {
 	}
 
 	public Flux<ServerSentEvent<Object>> stream(UUID userId, ChatRequest request) {
