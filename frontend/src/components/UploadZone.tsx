@@ -1,16 +1,17 @@
 import {useRef, useState} from 'react'
 import {FileUp, LoaderCircle} from 'lucide-react'
 import {upload} from '../lib/api'
+import {useAppConfig} from '../lib/config'
 import {useT} from '../lib/settings'
 import type {DocScope, LibraryDocument} from '../lib/types'
 import {ErrorNote} from './ErrorNote'
 
 const ACCEPT = '.pdf,.docx,.doc,.txt,.md,.html,.htm,.rtf,.odt'
-const MAX_MB = 10
 
 /** Drag & drop upload area. */
 export function UploadZone({ scope, onUploaded }: { scope: DocScope; onUploaded: (doc: LibraryDocument) => void }) {
   const t = useT()
+  const config = useAppConfig()
   const input = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -20,8 +21,9 @@ export function UploadZone({ scope, onUploaded }: { scope: DocScope; onUploaded:
     const file = files?.[0]
     if (!file) return
     setError(null)
-    if (file.size > MAX_MB * 1024 * 1024) {
-      setError({ code: 'TOO_LARGE', params: { maxMb: MAX_MB } })
+    // checked here too, so a large file is not uploaded just to be rejected
+    if (config && file.size > config.maxFileSizeMb * 1024 * 1024) {
+      setError({ code: 'TOO_LARGE', params: { maxMb: config.maxFileSizeMb } })
       return
     }
     const form = new FormData()
@@ -66,7 +68,7 @@ export function UploadZone({ scope, onUploaded }: { scope: DocScope; onUploaded:
           <FileUp className="h-10 w-10 text-neon transition-transform group-hover:-translate-y-1" />
         )}
         <div className="font-semibold">{busy ? t('docs.uploading') : t('docs.drop')}</div>
-        <div className="text-xs text-muted">{t('docs.formats')}</div>
+        {config && <div className="text-xs text-muted">{t('docs.formats', { mb: config.maxFileSizeMb })}</div>}
       </button>
       <input ref={input} type="file" accept={ACCEPT} hidden onChange={(e) => send(e.target.files)} />
       <ErrorNote error={error} className="mt-3" />

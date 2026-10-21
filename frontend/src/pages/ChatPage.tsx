@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import {useChat} from '../lib/chat'
 import {copyText} from '../lib/clipboard'
+import {useAppConfig} from '../lib/config'
 import {useErrorText} from '../lib/errors'
 import {useSettings, useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
@@ -67,6 +68,7 @@ const SUGGESTIONS: { key: TKey; icon: typeof Landmark; tile: string; label: stri
 export function ChatPage() {
   const t = useT()
   const { messages, ask, busy, stop } = useChat()
+  const config = useAppConfig()
   const [input, setInput] = useState('')
   const [openSource, setOpenSource] = useState<Source | null>(null)
   const page = useRef<HTMLDivElement>(null)
@@ -155,7 +157,7 @@ export function ChatPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={onKey}
                 placeholder={t('chat.placeholder')}
-                maxLength={2000}
+                maxLength={config?.maxQuestionLength}
                 className="max-h-[200px] flex-1 resize-none bg-transparent py-3 text-[15px] outline-none placeholder:text-muted/80"
               />
               {/* while an answer is being written, the send button stops it */}
