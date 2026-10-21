@@ -4,6 +4,7 @@ import {Clock, FileText, Trash} from 'lucide-react'
 import {useErrorText} from '../lib/errors'
 import {useT} from '../lib/settings'
 import type {LibraryDocument} from '../lib/types'
+import {useConfirm} from './ConfirmDialog'
 import {StatusBadge} from './StatusBadge'
 
 function daysLeft(expiresAt: string) {
@@ -21,6 +22,7 @@ export function DocumentCard({
 }) {
   const t = useT()
   const errorText = useErrorText()
+  const confirm = useConfirm()
   return (
     <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="glass glass-hover p-4">
       <div className="flex items-start gap-3">
@@ -52,7 +54,7 @@ export function DocumentCard({
         </div>
         {onDelete && (
           <button
-            onClick={() => window.confirm(t('docs.confirmDelete')) && onDelete()}
+            onClick={async () => (await confirm({ message: t('docs.confirmDelete'), confirmLabel: t('docs.delete') })) && onDelete()}
             className="rounded-lg p-2 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
             aria-label={t('docs.delete')}
             title={t('docs.delete')}

@@ -1,11 +1,13 @@
 import {useEffect, useState} from 'react'
 import {Link, useNavigate} from 'react-router-dom'
 import {motion} from 'motion/react'
-import {ChevronRight, ClipboardCheck, LoaderCircle, Radar, Trash} from 'lucide-react'
+import {ChevronRight, ClipboardCheck, Landmark, LoaderCircle, Radar, Trash, Upload} from 'lucide-react'
 import {del, get, post} from '../lib/api'
+import {useAuth} from '../lib/auth'
 import {useSettings} from '../lib/settings'
 import {usePolling} from '../lib/usePolling'
 import type {Law, LibraryDocument, Report} from '../lib/types'
+import {useConfirm} from '../components/ConfirmDialog'
 import {ErrorNote} from '../components/ErrorNote'
 import {PageHeader} from '../components/PageHeader'
 import {ScoreRing} from '../components/ScoreRing'
@@ -13,6 +15,8 @@ import {StatusBadge} from '../components/StatusBadge'
 
 export function CompliancePage() {
   const { t, lang } = useSettings()
+  const { user } = useAuth()
+  const confirm = useConfirm()
   const navigate = useNavigate()
   // null while loading, so the "nothing here yet" hints don't flash before the data arrives
   const [laws, setLaws] = useState<Law[] | null>(null)
@@ -93,8 +97,24 @@ export function CompliancePage() {
             {t('comp.run')}
           </button>
         </div>
-        {policies?.length === 0 && <p className="mt-4 text-sm text-amber">{t('comp.noPolicies')}</p>}
-        {laws?.length === 0 && <p className="mt-2 text-sm text-amber">{t('comp.noLaws')}</p>}
+        {policies?.length === 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-amber">
+            {t('comp.noPolicies')}
+            <Link to="/documents" className="btn btn-ghost py-1.5 text-xs">
+              <Upload className="h-3.5 w-3.5" /> {t('comp.uploadPolicy')}
+            </Link>
+          </div>
+        )}
+        {laws?.length === 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-amber">
+            {t('comp.noLaws')}
+            {user?.role === 'ADMIN' && (
+              <Link to="/admin" className="btn btn-ghost py-1.5 text-xs">
+                <Landmark className="h-3.5 w-3.5" /> {t('comp.openAdmin')}
+              </Link>
+            )}
+          </div>
+        )}
         <ErrorNote error={error ?? loadError} className="mt-4" />
       </motion.div>
 
@@ -132,12 +152,13 @@ export function CompliancePage() {
               </div>
               <span className="hidden text-xs text-muted sm:block">{new Date(r.createdAt).toLocaleString()}</span>
               <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  remove(r.id)
+                onClick={async (e) => {
+                  e.preventDefault() // the button sits inside the link to the report
+                  if (await confirm({ message: t('comp.confirmDelete'), confirmLabel: t('docs.delete') })) remove(r.id)
                 }}
                 className="rounded-lg p-2 text-muted hover:bg-danger/10 hover:text-danger"
-                aria-label="delete"
+                aria-label={t('docs.delete')}
+                title={t('docs.delete')}
               >
                 <Trash className="h-4 w-4" />
               </button>

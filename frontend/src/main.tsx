@@ -4,6 +4,7 @@ import {BrowserRouter} from 'react-router-dom'
 import {SettingsProvider} from './lib/settings'
 import {AuthProvider} from './lib/auth'
 import {App} from './App'
+import {ConfirmProvider} from './components/ConfirmDialog'
 import {ErrorBoundary} from './components/ErrorBoundary'
 import './index.css'
 
@@ -12,9 +13,11 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <SettingsProvider>
         <ErrorBoundary>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          <ConfirmProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </ConfirmProvider>
         </ErrorBoundary>
       </SettingsProvider>
     </BrowserRouter>

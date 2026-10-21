@@ -322,6 +322,32 @@ body {
   }
 }
 
+/* ---------- printing: Report → "Print / Save as PDF" ---------- */
+
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  html,
+  body,
+  #root {
+    height: auto;
+  }
+
+  /* keep the dark design (backgrounds and colours) in the PDF */
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cyber-grid,
+  .cyber-glow,
+  .scanline {
+    display: none;
+  }
+}
+
 /* markdown answers */
 .answer.prose {
   --tw-prose-body: #d4e2fb;

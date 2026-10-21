@@ -1,4 +1,5 @@
 import {createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState} from 'react'
+import {MotionConfig} from 'motion/react'
 import {dictionaries, format, type Lang, type TKey} from './i18n'
 
 interface Settings {
@@ -14,12 +15,18 @@ interface SettingsContextValue extends Settings {
 
 const STORAGE_KEY = 'cyberlaw.settings'
 
+/** Until the user chooses, animations follow the device's "reduce motion" setting. */
+const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+
 function load(): Settings {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
-    return { lang: saved.lang === 'en' ? 'en' : 'az', animations: saved.animations !== false }
+    return {
+      lang: saved.lang === 'en' ? 'en' : 'az',
+      animations: typeof saved.animations === 'boolean' ? saved.animations : !prefersReducedMotion(),
+    }
   } catch {
-    return { lang: 'az', animations: true }
+    return { lang: 'az', animations: !prefersReducedMotion() }
   }
 }
 
@@ -49,7 +56,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     [settings, t],
   )
 
-  return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>
+  return (
+    <SettingsContext.Provider value={value}>
+      {/* "Animations: off" also stops the moving parts of motion animations, not only the CSS ones */}
+      <MotionConfig reducedMotion={settings.animations ? 'never' : 'always'}>{children}</MotionConfig>
+    </SettingsContext.Provider>
+  )
 }
 
 export function useSettings() {

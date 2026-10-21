@@ -12,6 +12,7 @@ const en = {
   'nav.admin': 'Admin',
   'nav.settings': 'Settings',
   'nav.logout': 'Log out',
+  'nav.menu': 'Menu',
 
   // auth
   'auth.login': 'Log in',
@@ -114,6 +115,10 @@ const en = {
   'comp.back': 'All reports',
   'comp.progress': 'Checking requirements',
   'comp.vs': 'vs',
+  'comp.uploadPolicy': 'Upload a policy',
+  'comp.openAdmin': 'Open the Admin panel',
+  'comp.confirmDelete': 'Delete this report?',
+  'comp.print': 'Print / Save as PDF',
 
   // admin
   'admin.title': 'Admin · Official Library',
@@ -209,6 +214,7 @@ const az: Record<TKey, string> = {
   'nav.admin': 'Admin',
   'nav.settings': 'Tənzimləmələr',
   'nav.logout': 'Çıxış',
+  'nav.menu': 'Menyu',
 
   'auth.login': 'Daxil ol',
   'auth.register': 'Hesab yarat',
@@ -306,6 +312,10 @@ const az: Record<TKey, string> = {
   'comp.back': 'Bütün hesabatlar',
   'comp.progress': 'Tələblər yoxlanılır',
   'comp.vs': 'və',
+  'comp.uploadPolicy': 'Siyasət yüklə',
+  'comp.openAdmin': 'Admin panelini aç',
+  'comp.confirmDelete': 'Bu hesabat silinsin?',
+  'comp.print': 'Çap et / PDF kimi saxla',
 
   'admin.title': 'Admin · Rəsmi kitabxana',
   'admin.subtitle':

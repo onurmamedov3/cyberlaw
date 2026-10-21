@@ -78,9 +78,9 @@ export function Layout() {
   )
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full print:block print:h-auto">
       {/* desktop sidebar */}
-      <aside className="glass m-3 mr-0 hidden w-64 shrink-0 flex-col p-4 md:flex">
+      <aside className="glass m-3 mr-0 hidden w-64 shrink-0 flex-col p-4 md:flex print:hidden">
         <div className="mb-6 px-1 pt-1">
           <Logo />
         </div>
@@ -90,7 +90,7 @@ export function Layout() {
       </aside>
 
       {/* mobile top bar + drawer */}
-      <div className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-line bg-void/80 px-4 py-3 backdrop-blur md:hidden">
+      <div className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-line bg-void/80 px-4 py-3 backdrop-blur md:hidden print:hidden">
         <Logo />
         <div className="flex items-center gap-2">
           <button
@@ -101,7 +101,7 @@ export function Layout() {
           >
             <SquarePen className="h-5 w-5" />
           </button>
-          <button className="btn btn-ghost px-2.5" onClick={() => setOpen(true)} aria-label="Menu">
+          <button className="btn btn-ghost px-2.5" onClick={() => setOpen(true)} aria-label={t('nav.menu')}>
             <Menu className="h-5 w-5" />
           </button>
         </div>
@@ -111,7 +111,7 @@ export function Layout() {
           <aside className="glass absolute inset-y-3 left-3 flex w-72 flex-col p-4" onClick={(e) => e.stopPropagation()}>
             <div className="mb-6 flex items-center justify-between">
               <Logo />
-              <button onClick={() => setOpen(false)} aria-label="Close">
+              <button onClick={() => setOpen(false)} aria-label={t('common.close')}>
                 <X className="h-5 w-5 text-muted" />
               </button>
             </div>
@@ -122,7 +122,7 @@ export function Layout() {
         </div>
       )}
 
-      <main className="min-w-0 flex-1 overflow-y-auto pt-16 md:pt-0">
+      <main className="min-w-0 flex-1 overflow-y-auto pt-16 md:pt-0 print:overflow-visible print:pt-0">
         {/* a crash shows a message inside the page; going to another page clears it */}
         <ErrorBoundary key={location.pathname}>
           <Outlet />
