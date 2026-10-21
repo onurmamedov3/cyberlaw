@@ -79,6 +79,10 @@ public enum ErrorCode {
 		return status;
 	}
 
+	public String message() {
+		return message(Map.of());
+	}
+
 	/** The English message with its {placeholders} filled in. */
 	public String message(Map<String, ?> params) {
 		String text = message;

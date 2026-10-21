@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import az.cyberlaw.ai.AiErrorCode;
 import az.cyberlaw.ai.AiException;
+import az.cyberlaw.common.ErrorCode;
 import az.cyberlaw.config.CyberLawProperties;
 import az.cyberlaw.document.LanguageDetector;
 import az.cyberlaw.rag.RetrievalService;
@@ -66,7 +67,7 @@ public class ChatService {
 
 	public Flux<ServerSentEvent<Object>> stream(UUID userId, ChatRequest request) {
 		if (!props.aiConfigured()) {
-			return Flux.just(error(AiErrorCode.NOT_CONFIGURED));
+			return Flux.just(aiError(AiErrorCode.NOT_CONFIGURED));
 		}
 		String question = request.question().strip();
 		String memoryKey = userId + ":" + request.conversationId();
@@ -102,11 +103,7 @@ public class ChatService {
 						List.of(new UserMessage(question), new AssistantMessage(answer.toString()))));
 
 			return Flux.concat(Flux.just(sourcesEvent), tokens, Flux.just(event("done", Map.of())));
-		}).subscribeOn(Schedulers.boundedElastic()).onErrorResume(ex -> {
-			AiErrorCode code = AiErrorCode.classify(ex);
-			log.warn("Chat failed ({}): {}", code, ex.getMessage());
-			return Flux.just(error(code));
-		});
+		}).subscribeOn(Schedulers.boundedElastic()).onErrorResume(ex -> Flux.just(errorEvent(ex)));
 	}
 
 	public void clear(UUID userId, String conversationId) {
@@ -137,7 +134,17 @@ public class ChatService {
 		return ServerSentEvent.builder(data).event(name).build();
 	}
 
-	private static ServerSentEvent<Object> error(AiErrorCode code) {
+	private static ServerSentEvent<Object> errorEvent(Throwable ex) {
+		if (!AiErrorCode.isAiError(ex)) {
+			log.error("Chat failed", ex);
+			return event("error", Map.of("code", ErrorCode.INTERNAL.name(), "message", ErrorCode.INTERNAL.message()));
+		}
+		AiErrorCode code = AiErrorCode.classify(ex);
+		log.warn("Chat failed ({}): {}", code, ex.getMessage());
+		return aiError(code);
+	}
+
+	private static ServerSentEvent<Object> aiError(AiErrorCode code) {
 		return event("error", Map.of("code", code.name(), "message", AiException.describe(code)));
 	}
 

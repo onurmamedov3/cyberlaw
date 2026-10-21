@@ -46,6 +46,9 @@ public class LibraryDocument {
 	@Column(nullable = false)
 	private DocumentStatus status;
 
+	@Column(name = "error_code")
+	private String errorCode;
+
 	@Column(name = "error_message")
 	private String errorMessage;
 
@@ -84,16 +87,20 @@ public class LibraryDocument {
 		this.status = DocumentStatus.READY;
 		this.chunkCount = chunkCount;
 		this.language = language;
+		this.errorCode = null;
 		this.errorMessage = null;
 	}
 
-	public void markFailed(String errorMessage) {
+	/** The code (ErrorCode or AiErrorCode) lets the UI translate the English message. */
+	public void markFailed(String errorCode, String errorMessage) {
 		this.status = DocumentStatus.FAILED;
+		this.errorCode = errorCode;
 		this.errorMessage = errorMessage;
 	}
 
 	public void markProcessing() {
 		this.status = DocumentStatus.PROCESSING;
+		this.errorCode = null;
 		this.errorMessage = null;
 	}
 
@@ -139,6 +146,10 @@ public class LibraryDocument {
 
 	public DocumentStatus getStatus() {
 		return status;
+	}
+
+	public String getErrorCode() {
+		return errorCode;
 	}
 
 	public String getErrorMessage() {

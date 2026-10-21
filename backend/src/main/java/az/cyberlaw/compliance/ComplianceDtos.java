@@ -25,12 +25,13 @@ public final class ComplianceDtos {
 
 	public record ReportDto(String id, String policyDocumentId, String policyTitle, String lawDocumentId,
 			String lawTitle, String status, String language, int total, int processed, int met, int partial,
-			int missing, Integer score, String errorMessage, Instant createdAt, Instant finishedAt) {
+			int missing, Integer score, String errorCode, String errorMessage, Instant createdAt,
+			Instant finishedAt) {
 		static ReportDto of(ComplianceReport r, String policyTitle, String lawTitle) {
 			return new ReportDto(r.getId().toString(), r.getPolicyDocumentId().toString(), policyTitle,
 					r.getLawDocumentId().toString(), lawTitle, r.getStatus().name(), r.getLanguage(), r.getTotal(),
-					r.getProcessed(), r.getMet(), r.getPartial(), r.getMissing(), r.getScore(), r.getErrorMessage(),
-					r.getCreatedAt(), r.getFinishedAt());
+					r.getProcessed(), r.getMet(), r.getPartial(), r.getMissing(), r.getScore(), r.getErrorCode(),
+					r.getErrorMessage(), r.getCreatedAt(), r.getFinishedAt());
 		}
 	}
 

@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
+import az.cyberlaw.common.ErrorCode;
 import az.cyberlaw.config.CyberLawProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +79,7 @@ public class DocsFolderLoader {
 				documentService.deleteWithChunks(doc);
 			}
 			else {
-				doc.markFailed("Indexing was interrupted by a server restart. Please upload the file again.");
+				doc.markFailed(ErrorCode.INDEXING_INTERRUPTED.name(), ErrorCode.INDEXING_INTERRUPTED.message());
 				documents.save(doc);
 			}
 		}

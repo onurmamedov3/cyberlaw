@@ -138,7 +138,7 @@ public class ComplianceService {
 	@EventListener(ApplicationReadyEvent.class)
 	public void failInterruptedReports() {
 		for (ComplianceReport report : reports.findByStatus(ComplianceReport.Status.RUNNING)) {
-			report.fail("Interrupted by a server restart. Please run the check again.");
+			report.fail(ErrorCode.CHECK_INTERRUPTED.name(), ErrorCode.CHECK_INTERRUPTED.message());
 			reports.save(report);
 		}
 	}
