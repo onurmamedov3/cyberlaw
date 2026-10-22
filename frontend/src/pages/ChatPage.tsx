@@ -2,13 +2,11 @@ import {type KeyboardEvent, useEffect, useRef, useState} from 'react'
 import {AnimatePresence, motion} from 'motion/react'
 import {
     ArrowRight,
-    Blend,
     BookOpen,
     Check,
     ChevronRight,
     Copy,
     FileText,
-    Landmark,
     LockKeyhole,
     RefreshCw,
     RotateCcw,
@@ -23,18 +21,13 @@ import {useAppConfig} from '../lib/config'
 import {useErrorText} from '../lib/errors'
 import {useSettings, useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
-import type {ChatMessage, SearchScope, Source} from '../lib/types'
+import type {ChatMessage, Source} from '../lib/types'
 import {Markdown, citedIndexes} from '../components/Markdown'
+import {ScopePicker} from '../components/ScopePicker'
 import {SourceDrawer} from '../components/SourceDrawer'
 
-const SCOPES: { scope: SearchScope; icon: typeof Landmark }[] = [
-  { scope: 'OFFICIAL', icon: Landmark },
-  { scope: 'MINE', icon: FileText },
-  { scope: 'BOTH', icon: Blend },
-]
-
 /** Suggestion cards; class names are written out in full so Tailwind can find them. */
-const SUGGESTIONS: { key: TKey; icon: typeof Landmark; tile: string; label: string; hover: string }[] = [
+const SUGGESTIONS: { key: TKey; icon: typeof FileText; tile: string; label: string; hover: string }[] = [
   {
     key: 'chat.suggest1',
     icon: FileText,
@@ -67,7 +60,7 @@ const SUGGESTIONS: { key: TKey; icon: typeof Landmark; tile: string; label: stri
 
 export function ChatPage() {
   const t = useT()
-  const { messages, ask, busy, stop } = useChat()
+  const { messages, ask, busy, stop, scope, setScope } = useChat()
   const config = useAppConfig()
   const [input, setInput] = useState('')
   const [openSource, setOpenSource] = useState<Source | null>(null)
@@ -96,7 +89,8 @@ export function ChatPage() {
     if (messages.length !== count.current) following.current = true // a new question always jumps down
     count.current = messages.length
     const main = page.current?.closest('main')
-    if (main && following.current) main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' })
+    // the empty page stays at the top, so its title is not scrolled away on phones
+    if (main && following.current && messages.length > 0) main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' })
   }, [messages.length, last?.text, last?.status])
 
   // grow the textarea with its content
@@ -122,8 +116,6 @@ export function ChatPage() {
 
   return (
     <div ref={page} className="flex min-h-full flex-col">
-      <ChatHeader />
-
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4">
         {/* messages */}
         <div className="flex-1 space-y-6 py-6">
@@ -148,8 +140,8 @@ export function ChatPage() {
         {/* composer: pill with a cyan→violet gradient border */}
         <div className="sticky bottom-0 pb-4 pt-6">
           <div className="rounded-[30px] bg-gradient-to-r from-neon via-sky-500 to-violet p-[1.5px] shadow-[0_0_40px_-12px_rgb(56_189_248/0.6)] transition-shadow focus-within:shadow-[0_0_50px_-8px_rgb(168_85_247/0.7)]">
-            <div className="flex items-end gap-3 rounded-[28.5px] bg-[#070b16] py-2 pl-5 pr-2">
-              <Sparkles color="url(#cl-gradient)" className="mb-3 h-6 w-6 shrink-0" />
+            <div className="flex items-end gap-2 rounded-[28.5px] bg-[#070b16] py-2 pl-2.5 pr-2 sm:gap-3">
+              <ScopePicker scope={scope} onChange={setScope} />
               <textarea
                 ref={textarea}
                 rows={1}
@@ -185,46 +177,6 @@ export function ChatPage() {
 
       <SourceDrawer source={openSource} onClose={() => setOpenSource(null)} />
     </div>
-  )
-}
-
-/** Floating search-scope switch (centred), no bar behind it. "New chat" is in the menu. */
-function ChatHeader() {
-  const t = useT()
-  const { scope, setScope } = useChat()
-
-  return (
-    // the empty corners let clicks through to the content scrolling underneath
-    <header className="pointer-events-none sticky top-16 z-20 md:top-0">
-      <div className="flex justify-center px-4 py-4 sm:px-6">
-        <div className="pointer-events-auto flex items-center rounded-full border border-line bg-panel/80 p-1.5 shadow-[0_0_30px_-12px_rgb(34_211_238/0.5)] backdrop-blur-xl">
-          {SCOPES.map(({ scope: s, icon: Icon }) => {
-            const active = scope === s
-            return (
-              <button
-                key={s}
-                onClick={() => setScope(s)}
-                aria-pressed={active}
-                title={t(`chat.scope.${s}`)}
-                className={`relative flex items-center gap-2 rounded-full px-3.5 py-2.5 text-sm font-semibold transition-colors sm:px-5 ${
-                  active ? 'text-white' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                {active && (
-                  <motion.span
-                    layoutId="scope-pill"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-sky-400 via-blue-500 to-violet-500 shadow-[0_0_28px_-4px_rgb(56_189_248/0.75)]"
-                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                  />
-                )}
-                <Icon className="relative h-5 w-5" strokeWidth={1.75} />
-                <span className="relative hidden sm:inline">{t(`chat.scope.${s}`)}</span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    </header>
   )
 }
 
