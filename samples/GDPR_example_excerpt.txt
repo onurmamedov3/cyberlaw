@@ -1,0 +1,111 @@
+GENERAL DATA PROTECTION REGULATION (EU) 2016/679 - EXAMPLE EXCERPT FOR TESTING
+
+This file is a shortened and simplified excerpt prepared for testing the CyberLaw compliance checker.
+It paraphrases selected articles of Regulation (EU) 2016/679 (GDPR) that set obligations for
+organisations. It is not the official text; the authoritative version is published on EUR-Lex.
+
+CHAPTER II
+Principles
+
+Article 5
+Principles relating to processing of personal data
+1. Personal data shall be:
+(a) processed lawfully, fairly and in a transparent manner in relation to the data subject (lawfulness, fairness and transparency);
+(b) collected for specified, explicit and legitimate purposes and not further processed in a manner that is incompatible with those purposes (purpose limitation);
+(c) adequate, relevant and limited to what is necessary in relation to the purposes for which they are processed (data minimisation);
+(d) accurate and, where necessary, kept up to date; every reasonable step must be taken to ensure that personal data that are inaccurate are erased or rectified without delay (accuracy);
+(e) kept in a form which permits identification of data subjects for no longer than is necessary for the purposes for which the personal data are processed (storage limitation);
+(f) processed in a manner that ensures appropriate security of the personal data, including protection against unauthorised or unlawful processing and against accidental loss, destruction or damage, using appropriate technical or organisational measures (integrity and confidentiality).
+2. The controller shall be responsible for, and be able to demonstrate compliance with, paragraph 1 (accountability).
+
+Article 6
+Lawfulness of processing
+1. Processing shall be lawful only if and to the extent that at least one of the following applies: (a) the data subject has given consent to the processing for one or more specific purposes; (b) processing is necessary for the performance of a contract with the data subject; (c) processing is necessary for compliance with a legal obligation of the controller; (d) processing is necessary to protect the vital interests of a person; (e) processing is necessary for a task carried out in the public interest; (f) processing is necessary for the legitimate interests of the controller, except where such interests are overridden by the rights of the data subject.
+
+Article 7
+Conditions for consent
+1. Where processing is based on consent, the controller shall be able to demonstrate that the data subject has consented to the processing of his or her personal data.
+3. The data subject shall have the right to withdraw his or her consent at any time. Prior to giving consent, the data subject shall be informed thereof. It shall be as easy to withdraw as to give consent.
+
+CHAPTER III
+Rights of the data subject
+
+Article 12
+Transparent information, communication and modalities for the exercise of the rights of the data subject
+3. The controller shall provide information on action taken on a request under Articles 15 to 17 to the data subject without undue delay and in any event within one month of receipt of the request. That period may be extended by two further months where necessary; the controller shall inform the data subject of any such extension within one month of receipt of the request, together with the reasons for the delay.
+
+Article 13
+Information to be provided where personal data are collected from the data subject
+1. At the time when personal data are obtained, the controller shall provide the data subject with: the identity and contact details of the controller; the contact details of the data protection officer, where applicable; the purposes of the processing and its legal basis; the recipients of the personal data; and, where applicable, the intention to transfer personal data to a third country.
+2. The controller shall also provide: the period for which the personal data will be stored; the existence of the rights of access, rectification and erasure; the right to withdraw consent; and the right to lodge a complaint with a supervisory authority.
+
+Article 15
+Right of access by the data subject
+1. The data subject shall have the right to obtain from the controller confirmation as to whether or not personal data concerning him or her are being processed, and access to the personal data.
+3. The controller shall provide a copy of the personal data undergoing processing.
+
+Article 16
+Right to rectification
+The data subject shall have the right to obtain from the controller without undue delay the rectification of inaccurate personal data concerning him or her, and to have incomplete personal data completed.
+
+Article 17
+Right to erasure
+1. The data subject shall have the right to obtain from the controller the erasure of personal data concerning him or her without undue delay where, among other grounds, the personal data are no longer necessary for the purposes for which they were collected, the data subject withdraws consent, or the personal data have been unlawfully processed.
+
+CHAPTER IV
+Controller and processor
+
+Article 25
+Data protection by design and by default
+1. The controller shall implement appropriate technical and organisational measures, such as pseudonymisation, which are designed to implement the data protection principles in an effective manner, both when deciding on the means of processing and at the time of the processing itself.
+2. The controller shall ensure that, by default, only personal data which are necessary for each specific purpose of the processing are processed.
+
+Article 28
+Processor
+1. The controller shall use only processors providing sufficient guarantees to implement appropriate technical and organisational measures.
+2. The processor shall not engage another processor (sub-processor) without prior written authorisation of the controller.
+3. Processing by a processor shall be governed by a written contract which stipulates that the processor: processes the personal data only on documented instructions from the controller; ensures that persons authorised to process the data are bound by confidentiality; takes the security measures required by Article 32; assists the controller in responding to data subject requests and in handling personal data breaches; deletes or returns all personal data at the end of the services; and makes available all information necessary to demonstrate compliance, including audits and inspections.
+
+Article 30
+Records of processing activities
+1. Each controller shall maintain a record of processing activities under its responsibility. The record shall contain: the name and contact details of the controller and of the data protection officer; the purposes of the processing; a description of the categories of data subjects and of personal data; the categories of recipients; transfers to third countries; where possible, the time limits for erasure; and a general description of the technical and organisational security measures.
+3. The record shall be in writing, including in electronic form.
+4. The controller shall make the record available to the supervisory authority on request.
+
+Article 32
+Security of processing
+1. The controller and the processor shall implement appropriate technical and organisational measures to ensure a level of security appropriate to the risk, including as appropriate: (a) the pseudonymisation and encryption of personal data; (b) the ability to ensure the ongoing confidentiality, integrity, availability and resilience of processing systems and services; (c) the ability to restore the availability and access to personal data in a timely manner in the event of a physical or technical incident; (d) a process for regularly testing, assessing and evaluating the effectiveness of technical and organisational measures.
+4. The controller shall ensure that any person acting under its authority who has access to personal data does not process them except on instructions from the controller.
+
+Article 33
+Notification of a personal data breach to the supervisory authority
+1. In the case of a personal data breach, the controller shall without undue delay and, where feasible, not later than 72 hours after having become aware of it, notify the personal data breach to the supervisory authority, unless the breach is unlikely to result in a risk to the rights and freedoms of natural persons. Where the notification is not made within 72 hours, it shall be accompanied by reasons for the delay.
+2. The processor shall notify the controller without undue delay after becoming aware of a personal data breach.
+3. The notification shall describe the nature of the breach, the categories and approximate number of data subjects and records concerned, the contact details of the data protection officer, the likely consequences of the breach, and the measures taken or proposed.
+5. The controller shall document any personal data breaches, comprising the facts relating to the breach, its effects and the remedial action taken.
+
+Article 34
+Communication of a personal data breach to the data subject
+1. When the personal data breach is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall communicate the personal data breach to the data subject without undue delay, in clear and plain language.
+
+Article 35
+Data protection impact assessment
+1. Where a type of processing, in particular using new technologies, is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall, prior to the processing, carry out an assessment of the impact of the processing on the protection of personal data.
+3. An assessment is required in particular for systematic and extensive evaluation of personal aspects based on automated processing including profiling, processing on a large scale of special categories of data, and systematic monitoring of a publicly accessible area on a large scale.
+7. The assessment shall contain a description of the processing and its purposes, an assessment of necessity and proportionality, an assessment of the risks, and the measures envisaged to address the risks.
+
+Article 37
+Designation of the data protection officer
+1. The controller shall designate a data protection officer where its core activities consist of processing operations which require regular and systematic monitoring of data subjects on a large scale, or of processing on a large scale of special categories of data.
+7. The controller shall publish the contact details of the data protection officer and communicate them to the supervisory authority.
+
+CHAPTER V
+Transfers of personal data to third countries
+
+Article 44
+General principle for transfers
+Any transfer of personal data to a third country or an international organisation shall take place only if the conditions laid down in this Chapter are complied with.
+
+Article 46
+Transfers subject to appropriate safeguards
+1. In the absence of an adequacy decision, a controller may transfer personal data to a third country only if it has provided appropriate safeguards, such as standard data protection clauses adopted by the Commission or binding corporate rules, and on condition that enforceable data subject rights and effective legal remedies are available.
