@@ -39,6 +39,11 @@ export function DocumentsPage() {
 
       <UploadZone
         scope="PRIVATE"
+        fullText={
+          config && mine.length >= config.maxPrivateDocuments
+            ? t('docs.full', { max: config.maxPrivateDocuments })
+            : undefined
+        }
         onUploaded={(doc) => {
           setData((all) => [doc, ...(all ?? [])])
           poll() // keep refreshing until indexing is done

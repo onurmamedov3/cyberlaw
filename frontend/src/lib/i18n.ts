@@ -70,6 +70,7 @@ const en = {
   'docs.drop': 'Drop a file here or click to choose',
   'docs.formats': 'PDF, DOCX or TXT · max {mb} MB',
   'docs.uploading': 'Uploading…',
+  'docs.full': 'Limit reached ({max}/{max}): delete a document to upload a new one',
   'docs.privacy':
     'Do not upload confidential documents: the free Gemini tier may use content to improve its models.',
   'docs.limits': 'Max {max} private files · deleted automatically after {days} days',
@@ -271,6 +272,7 @@ const az: Record<TKey, string> = {
   'docs.drop': 'Faylı bura atın və ya seçmək üçün klikləyin',
   'docs.formats': 'PDF, DOCX və ya TXT · maks. {mb} MB',
   'docs.uploading': 'Yüklənir…',
+  'docs.full': 'Limit doldu ({max}/{max}): yenisini yükləmək üçün bir sənədi silin',
   'docs.privacy':
     'Məxfi sənədlər yükləməyin: pulsuz Gemini planı məzmundan modellərini təkmilləşdirmək üçün istifadə edə bilər.',
   'docs.limits': 'Maks. {max} şəxsi fayl · {days} gündən sonra avtomatik silinir',
