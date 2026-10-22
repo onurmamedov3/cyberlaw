@@ -1,15 +1,12 @@
 import type {ReactNode} from 'react'
 import {motion} from 'motion/react'
 import {Clock, FileText, Trash} from 'lucide-react'
+import {daysLeft} from '../lib/dates'
 import {useErrorText} from '../lib/errors'
 import {useT} from '../lib/settings'
 import type {LibraryDocument} from '../lib/types'
 import {useConfirm} from './ConfirmDialog'
 import {StatusBadge} from './StatusBadge'
-
-function daysLeft(expiresAt: string) {
-  return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86_400_000))
-}
 
 export function DocumentCard({
   doc,

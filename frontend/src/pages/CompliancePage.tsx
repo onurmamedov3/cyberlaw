@@ -1,9 +1,10 @@
 import {useEffect, useState} from 'react'
 import {Link, useNavigate} from 'react-router-dom'
 import {motion} from 'motion/react'
-import {ChevronRight, ClipboardCheck, Landmark, LoaderCircle, Radar, Trash, Upload} from 'lucide-react'
+import {ChevronRight, ClipboardCheck, Clock, Landmark, LoaderCircle, Radar, Trash, Upload} from 'lucide-react'
 import {del, get, post} from '../lib/api'
 import {useAuth} from '../lib/auth'
+import {daysLeft} from '../lib/dates'
 import {useSettings} from '../lib/settings'
 import {usePolling} from '../lib/usePolling'
 import type {Law, LibraryDocument, Report} from '../lib/types'
@@ -143,10 +144,16 @@ export function CompliancePage() {
                   </div>
                 )}
                 {r.status === 'DONE' && (
-                  <div className="mt-1 flex gap-3 text-xs">
+                  <div className="mt-1 flex flex-wrap gap-3 text-xs">
                     <span className="text-acid">✓ {r.met}</span>
                     <span className="text-amber">◐ {r.partial}</span>
                     <span className="text-danger">✕ {r.missing}</span>
+                    {r.policyExpiresAt && (
+                      <span className="inline-flex items-center gap-1 text-muted">
+                        <Clock className="h-3 w-3" /> {t('docs.expiresIn')} {daysLeft(r.policyExpiresAt)}
+                        {t('docs.days')}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

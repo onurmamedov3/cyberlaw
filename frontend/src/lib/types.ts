@@ -76,6 +76,8 @@ export interface Report {
   id: string
   policyDocumentId: string
   policyTitle: string | null
+  /** The report is deleted together with its policy; null when the policy never expires. */
+  policyExpiresAt: string | null
   lawDocumentId: string
   lawTitle: string | null
   status: 'RUNNING' | 'DONE' | 'FAILED'

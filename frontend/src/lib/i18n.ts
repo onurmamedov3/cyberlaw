@@ -123,6 +123,7 @@ const en = {
   'comp.openAdmin': 'Open the Admin panel',
   'comp.confirmDelete': 'Delete this report?',
   'comp.print': 'Print / Save as PDF',
+  'comp.expires': 'This report is deleted together with your policy in {days} days. Save it as PDF to keep a copy.',
 
   // admin
   'admin.title': 'Admin · Official Library',
@@ -324,6 +325,7 @@ const az: Record<TKey, string> = {
   'comp.openAdmin': 'Admin panelini aç',
   'comp.confirmDelete': 'Bu hesabat silinsin?',
   'comp.print': 'Çap et / PDF kimi saxla',
+  'comp.expires': 'Bu hesabat siyasətinizlə birlikdə {days} gündən sonra silinəcək. Nüsxəni saxlamaq üçün PDF kimi yadda saxlayın.',
 
   'admin.title': 'Admin · Rəsmi kitabxana',
   'admin.subtitle':

@@ -1,8 +1,9 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 import {AnimatePresence, motion} from 'motion/react'
-import {ArrowLeft, BookOpen, ChevronDown, CircleCheck, CircleX, Printer, Quote, TriangleAlert} from 'lucide-react'
+import {ArrowLeft, BookOpen, ChevronDown, CircleCheck, Clock, CircleX, Printer, Quote, TriangleAlert} from 'lucide-react'
 import {get} from '../lib/api'
+import {daysLeft} from '../lib/dates'
 import {useErrorText} from '../lib/errors'
 import {useT} from '../lib/settings'
 import {usePolling} from '../lib/usePolling'
@@ -63,6 +64,12 @@ export function ReportPage() {
           <h1 className="text-xl font-bold">{report.policyTitle}</h1>
           <div className="label-mono mt-3">{t('comp.law')}</div>
           <h2 className="text-lg font-semibold text-neon-soft">{report.lawTitle}</h2>
+          {report.policyExpiresAt && (
+            <p className="mt-3 flex items-start gap-2 text-xs text-amber print:hidden">
+              <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {t('comp.expires', { days: daysLeft(report.policyExpiresAt) })}
+            </p>
+          )}
           {report.status === 'FAILED' && (
             <p className="mt-3 text-sm text-red-300">{errorText({ code: report.errorCode, message: report.errorMessage })}</p>
           )}
