@@ -1,4 +1,5 @@
 import {type KeyboardEvent, useEffect, useRef, useState} from 'react'
+import {useNavigate, useParams} from 'react-router-dom'
 import {AnimatePresence, motion} from 'motion/react'
 import {
     ArrowRight,
@@ -6,6 +7,7 @@ import {
     Check,
     ChevronRight,
     Copy,
+    LoaderCircle,
     FileText,
     LockKeyhole,
     RefreshCw,
@@ -25,6 +27,7 @@ import type {ChatMessage, Source} from '../lib/types'
 import {Markdown, citedIndexes} from '../components/Markdown'
 import {ScopePicker} from '../components/ScopePicker'
 import {SourceDrawer} from '../components/SourceDrawer'
+import {ErrorNote} from '../components/ErrorNote'
 
 /** Suggestion cards; class names are written out in full so Tailwind can find them. */
 const SUGGESTIONS: { key: TKey; icon: typeof FileText; tile: string; label: string; hover: string }[] = [
@@ -60,7 +63,26 @@ const SUGGESTIONS: { key: TKey; icon: typeof FileText; tile: string; label: stri
 
 export function ChatPage() {
   const t = useT()
-  const { messages, ask, busy, stop, scope, setScope } = useChat()
+  const { messages, ask, busy, stop, scope, setScope, conversationId, opening, loadError, openConversation, newChat } =
+    useChat()
+  const { id } = useParams()
+  const navigate = useNavigate()
+
+  // The URL decides what is on screen: /chat/<id> is a saved chat, /chat a new one.
+  useEffect(() => {
+    if (id) openConversation(id)
+    else if (conversationId) newChat()
+    // only when the URL changes; conversationId is read as it is at that moment
+  }, [id])
+
+  // A new chat gets its own address once its first answer is saved.
+  const previousConversation = useRef(conversationId)
+  useEffect(() => {
+    if (!id && conversationId && previousConversation.current === null) {
+      navigate(`/chat/${conversationId}`, { replace: true })
+    }
+    previousConversation.current = conversationId
+  }, [conversationId, id, navigate])
   const config = useAppConfig()
   const [input, setInput] = useState('')
   const [openSource, setOpenSource] = useState<Source | null>(null)
@@ -119,7 +141,12 @@ export function ChatPage() {
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4">
         {/* messages */}
         <div className="flex-1 space-y-6 py-6">
-          {messages.length === 0 ? (
+          <ErrorNote error={loadError} />
+          {opening ? (
+            <div className="grid place-items-center pt-24 text-muted">
+              <LoaderCircle className="h-8 w-8 animate-spin text-neon" />
+            </div>
+          ) : messages.length === 0 ? (
             <EmptyState onPick={(q) => send(q)} />
           ) : (
             messages.map((m) =>
@@ -342,7 +369,7 @@ function AssistantMessage({
                           {s.articleTitle && ` · ${s.articleTitle}`}
                         </>
                       ) : (
-                        s.text.slice(0, 60) + '…'
+                        s.deleted ? t('source.deletedShort') : s.text.slice(0, 60) + '…'
                       )}
                     </span>
                   </span>

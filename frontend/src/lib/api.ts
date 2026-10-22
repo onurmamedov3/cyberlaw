@@ -1,4 +1,4 @@
-import type {SearchScope, Source} from './types'
+import type {Conversation, SearchScope, Source} from './types'
 
 const TOKEN_KEY = 'cyberlaw.token'
 
@@ -83,6 +83,8 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
 export const get = <T>(path: string) => api<T>(path)
 export const post = <T>(path: string, body?: unknown) =>
   api<T>(path, { method: 'POST', body: body === undefined ? undefined : JSON.stringify(body) })
+export const patch = <T>(path: string, body: unknown) =>
+  api<T>(path, { method: 'PATCH', body: JSON.stringify(body) })
 export const put = <T>(path: string, body: unknown) => api<T>(path, { method: 'PUT', body: JSON.stringify(body) })
 export const del = (path: string) => api<void>(path, { method: 'DELETE' })
 
@@ -93,6 +95,8 @@ export function upload<T>(path: string, form: FormData) {
 export interface StreamHandlers {
   onSources: (sources: Source[]) => void
   onToken: (text: string) => void
+  /** The answer was saved: the chat it belongs to (a new one after the first question). */
+  onConversation: (conversation: Conversation) => void
   onDone: () => void
   onError: (error: ApiError) => void
 }
@@ -102,7 +106,13 @@ export interface StreamHandlers {
  * (EventSource cannot send POST bodies or Authorization headers).
  */
 export async function streamChat(
-  body: { question: string; conversationId: string; scope: SearchScope; language: string; regenerate?: boolean },
+  body: {
+    question: string
+    conversationId: string | null
+    scope: SearchScope
+    language: string
+    regenerate?: boolean
+  },
   handlers: StreamHandlers,
   signal?: AbortSignal,
 ) {
@@ -148,6 +158,9 @@ export async function streamChat(
         break
       case 'token':
         handlers.onToken(payload.text ?? '')
+        break
+      case 'conversation':
+        handlers.onConversation(payload as Conversation)
         break
       case 'done':
         finished = true

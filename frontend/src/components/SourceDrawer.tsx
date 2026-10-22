@@ -55,7 +55,12 @@ export function SourceDrawer({ source, onClose }: { source: Source | null; onClo
                   {source.article}. {source.articleTitle}
                 </div>
               )}
-              <p className="whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-slate-300">{source.text}</p>
+              {source.deleted ? (
+                // a saved chat keeps no text of a deleted private document
+                <p className="rounded-lg border border-line bg-void/40 p-4 text-sm italic text-muted">{t('source.deleted')}</p>
+              ) : (
+                <p className="whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-slate-300">{source.text}</p>
+              )}
             </div>
 
             <div className="border-t border-line p-5">

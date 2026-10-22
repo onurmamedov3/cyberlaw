@@ -55,21 +55,27 @@ class ChatControllerTest {
 
 	@Test
 	void optionalFieldsMayBeLeftOut() throws Exception {
-		ask("{\"question\": \"What is GDPR?\", \"conversationId\": \"c1\"}").andExpect(status().isOk());
+		ask("{\"question\": \"What is GDPR?\"}").andExpect(status().isOk());
+	}
+
+	@Test
+	void aConversationIdMustBeAUuid() throws Exception {
+		ask("{\"question\": \"What is GDPR?\", \"conversationId\": \"c1\"}").andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("BAD_REQUEST"));
 	}
 
 	@Test
 	void aBlankQuestionGetsItsOwnCode() throws Exception {
-		ask("{\"question\": \"  \", \"conversationId\": \"c1\"}").andExpect(status().isBadRequest())
+		ask("{\"question\": \"  \"}").andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.code").value("INVALID_QUESTION"));
 	}
 
 	@Test
 	void theSixthQuestionWithinAMinuteHasToWait() throws Exception {
 		for (int i = 0; i < 5; i++) {
-			ask("{\"question\": \"Question " + i + "\", \"conversationId\": \"c1\"}").andExpect(status().isOk());
+			ask("{\"question\": \"Question " + i + "\"}").andExpect(status().isOk());
 		}
-		ask("{\"question\": \"One more\", \"conversationId\": \"c1\"}").andExpect(status().isTooManyRequests())
+		ask("{\"question\": \"One more\"}").andExpect(status().isTooManyRequests())
 			.andExpect(jsonPath("$.code").value("TOO_MANY_QUESTIONS"))
 			.andExpect(jsonPath("$.params.seconds").isNumber());
 	}

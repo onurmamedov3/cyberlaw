@@ -28,7 +28,7 @@ public enum ErrorCode {
 	INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "The password must be 8 to 100 characters long."),
 	INVALID_DISPLAY_NAME(HttpStatus.BAD_REQUEST, "Enter your name (max 100 characters)."),
 	INVALID_QUESTION(HttpStatus.BAD_REQUEST, "The question is empty or too long."),
-	INVALID_CONVERSATION_ID(HttpStatus.BAD_REQUEST, "Invalid conversation. Please start a new chat."),
+	INVALID_TITLE(HttpStatus.BAD_REQUEST, "Enter a name (max 200 characters)."),
 	INVALID_PER_MINUTE(HttpStatus.BAD_REQUEST, "Enter a whole number from 0 to 1000."),
 
 	// accounts
@@ -64,7 +64,10 @@ public enum ErrorCode {
 	CHECKLIST_NOT_ALLOWED(HttpStatus.BAD_REQUEST,
 			"Only indexed documents of the Official Library can have a checklist."),
 	CHECKLIST_RUNNING(HttpStatus.CONFLICT, "The checklist is already being generated."),
-	REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "Report not found.");
+	REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "Report not found."),
+
+	// chat history
+	CONVERSATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Chat not found. It may have been deleted.");
 
 	private final HttpStatus status;
 

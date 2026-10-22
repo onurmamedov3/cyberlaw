@@ -18,6 +18,7 @@ import az.cyberlaw.common.ErrorCode;
 import az.cyberlaw.config.CyberLawProperties;
 import az.cyberlaw.security.CurrentUser;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,10 +34,14 @@ public class DocumentService {
 
 	private final CyberLawProperties props;
 
-	public DocumentService(LibraryDocumentRepository documents, IngestionService ingestion, CyberLawProperties props) {
+	private final ApplicationEventPublisher events;
+
+	public DocumentService(LibraryDocumentRepository documents, IngestionService ingestion, CyberLawProperties props,
+			ApplicationEventPublisher events) {
 		this.documents = documents;
 		this.ingestion = ingestion;
 		this.props = props;
+		this.events = events;
 	}
 
 	public List<DocumentDto> listVisible(CurrentUser user) {
@@ -107,6 +112,7 @@ public class DocumentService {
 	public void deleteWithChunks(LibraryDocument doc) {
 		ingestion.deleteChunks(doc.getId());
 		documents.delete(doc);
+		events.publishEvent(new DocumentDeleted(doc.getId(), doc.getScope()));
 	}
 
 	public LibraryDocument getVisible(CurrentUser user, UUID id) {

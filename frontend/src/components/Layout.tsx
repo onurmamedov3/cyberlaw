@@ -5,6 +5,7 @@ import {useAuth} from '../lib/auth'
 import {useChat} from '../lib/chat'
 import {useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
+import {ChatHistoryList} from './ChatHistoryList'
 import {ErrorBoundary} from './ErrorBoundary'
 import {Logo} from './Logo'
 
@@ -21,7 +22,7 @@ export function Layout() {
   const t = useT()
   const location = useLocation()
   const navigate = useNavigate()
-  const { newChat } = useChat()
+  const { newChat, conversationId } = useChat()
   const [open, setOpen] = useState(false)
 
   const startNewChat = () => {
@@ -37,16 +38,17 @@ export function Layout() {
   )
 
   const nav = (
-    <nav className="flex flex-1 flex-col gap-1">
+    <nav className="flex flex-col gap-1">
       {links
         .filter((l) => !l.admin || user?.role === 'ADMIN')
         .map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
-            to={to}
+            // "Chat" goes back to the chat on screen, not to an empty one
+            to={to === '/chat' && conversationId ? `/chat/${conversationId}` : to}
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+              `group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-neon/10 text-neon shadow-[inset_2px_0_0_var(--color-neon)]'
                   : 'text-muted hover:bg-white/5 hover:text-white'
@@ -86,6 +88,7 @@ export function Layout() {
         </div>
         {newChatButton}
         {nav}
+        <ChatHistoryList onNavigate={() => setOpen(false)} />
         {footer}
       </aside>
 
@@ -117,6 +120,7 @@ export function Layout() {
             </div>
             {newChatButton}
             {nav}
+            <ChatHistoryList onNavigate={() => setOpen(false)} />
             {footer}
           </aside>
         </div>

@@ -7,6 +7,8 @@ export interface AppConfig {
   privateTtlDays: number
   maxFileSizeMb: number
   maxQuestionLength: number
+  /** Chats are deleted after this many days without activity; 0 = kept until the user deletes them. */
+  historyDays: number
 }
 
 let request: Promise<AppConfig> | null = null

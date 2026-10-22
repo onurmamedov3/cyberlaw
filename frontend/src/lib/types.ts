@@ -40,6 +40,21 @@ export interface Source {
   chapter: string
   text: string
   score: number
+  /** In a saved chat: the private document was deleted, so its text is gone. */
+  deleted?: boolean
+}
+
+/** A saved chat in the sidebar. */
+export interface Conversation {
+  id: string
+  title: string
+  scope: SearchScope
+  updatedAt: string
+}
+
+export interface ConversationDetail {
+  conversation: Conversation
+  messages: { id: string; role: 'user' | 'assistant'; text: string; sources: Source[]; createdAt: string }[]
 }
 
 export interface ChatMessage {

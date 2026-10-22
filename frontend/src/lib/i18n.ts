@@ -14,6 +14,18 @@ const en = {
   'nav.logout': 'Log out',
   'nav.menu': 'Menu',
 
+  // chat history (sidebar)
+  'history.recent': 'Recent chats',
+  'history.empty': 'Your chats will appear here.',
+  'history.today': 'Today',
+  'history.yesterday': 'Yesterday',
+  'history.week': 'Previous 7 days',
+  'history.older': 'Older',
+  'history.actions': 'Rename or delete',
+  'history.rename': 'Rename',
+  'history.delete': 'Delete',
+  'history.confirmDelete': 'Delete this chat?',
+
   // auth
   'auth.login': 'Log in',
   'auth.register': 'Create account',
@@ -63,6 +75,8 @@ const en = {
   'source.official': 'Official',
   'source.private': 'My document',
   'source.relevance': 'Relevance',
+  'source.deletedShort': 'Document deleted',
+  'source.deleted': 'This document has been deleted, so its text is no longer kept in your chats.',
 
   // documents
   'docs.title': 'My Documents',
@@ -153,6 +167,12 @@ const en = {
   'settings.aiMissing': 'No Gemini API key: add it to the .env file',
   'settings.on': 'On',
   'settings.off': 'Off',
+  'settings.history': 'Chat history',
+  'settings.historyKept': 'Your chats are kept until you delete them. Only you can see them.',
+  'settings.historyDays': 'Chats are deleted automatically {days} days after their last message. Only you can see them.',
+  'settings.clearHistory': 'Delete all chats',
+  'settings.confirmClear': 'Delete all your chats? This cannot be undone.',
+  'settings.cleared': 'All chats deleted',
 
   // common
   'common.loading': 'Loading…',
@@ -176,7 +196,8 @@ const en = {
   'error.INVALID_PASSWORD': 'The password must be 8 to 100 characters long.',
   'error.INVALID_DISPLAY_NAME': 'Enter your name (max 100 characters).',
   'error.INVALID_QUESTION': 'The question is empty or too long.',
-  'error.INVALID_CONVERSATION_ID': 'Invalid conversation. Please start a new chat.',
+  'error.INVALID_TITLE': 'Enter a name (max 200 characters).',
+  'error.CONVERSATION_NOT_FOUND': 'Chat not found. It may have been deleted.',
   'error.INVALID_PER_MINUTE': 'Enter a whole number from 0 to 1000.',
   'error.EMAIL_TAKEN': 'An account with this email already exists.',
   'error.WRONG_CREDENTIALS': 'Wrong email or password.',
@@ -220,6 +241,17 @@ const az: Record<TKey, string> = {
   'nav.settings': 'Tənzimləmələr',
   'nav.logout': 'Çıxış',
   'nav.menu': 'Menyu',
+
+  'history.recent': 'Son söhbətlər',
+  'history.empty': 'Söhbətləriniz burada görünəcək.',
+  'history.today': 'Bu gün',
+  'history.yesterday': 'Dünən',
+  'history.week': 'Son 7 gün',
+  'history.older': 'Daha əvvəl',
+  'history.actions': 'Adını dəyiş və ya sil',
+  'history.rename': 'Adını dəyiş',
+  'history.delete': 'Sil',
+  'history.confirmDelete': 'Bu söhbət silinsin?',
 
   'auth.login': 'Daxil ol',
   'auth.register': 'Hesab yarat',
@@ -267,6 +299,8 @@ const az: Record<TKey, string> = {
   'source.official': 'Rəsmi',
   'source.private': 'Mənim sənədim',
   'source.relevance': 'Uyğunluq',
+  'source.deletedShort': 'Sənəd silinib',
+  'source.deleted': 'Bu sənəd silinib, ona görə onun mətni söhbətlərinizdə artıq saxlanılmır.',
 
   'docs.title': 'Mənim sənədlərim',
   'docs.subtitle': 'Öz siyasət, qayda və ya müqavilələrinizi yükləyin və onlar barədə sual verin.',
@@ -353,6 +387,12 @@ const az: Record<TKey, string> = {
   'settings.aiMissing': 'Gemini API açarı yoxdur: onu .env faylına əlavə edin',
   'settings.on': 'Açıq',
   'settings.off': 'Bağlı',
+  'settings.history': 'Söhbət tarixçəsi',
+  'settings.historyKept': 'Söhbətləriniz siz silənə qədər saxlanılır. Onları yalnız siz görürsünüz.',
+  'settings.historyDays': 'Söhbətlər son mesajdan {days} gün sonra avtomatik silinir. Onları yalnız siz görürsünüz.',
+  'settings.clearHistory': 'Bütün söhbətləri sil',
+  'settings.confirmClear': 'Bütün söhbətləriniz silinsin? Bunu geri qaytarmaq olmaz.',
+  'settings.cleared': 'Bütün söhbətlər silindi',
 
   'common.loading': 'Yüklənir…',
   'common.error': 'Xəta baş verdi',
@@ -374,7 +414,8 @@ const az: Record<TKey, string> = {
   'error.INVALID_PASSWORD': 'Şifrə 8-dən 100-ə qədər simvoldan ibarət olmalıdır.',
   'error.INVALID_DISPLAY_NAME': 'Adınızı daxil edin (maks. 100 simvol).',
   'error.INVALID_QUESTION': 'Sual boşdur və ya çox uzundur.',
-  'error.INVALID_CONVERSATION_ID': 'Söhbət tapılmadı. Yeni söhbət başladın.',
+  'error.INVALID_TITLE': 'Ad daxil edin (maks. 200 simvol).',
+  'error.CONVERSATION_NOT_FOUND': 'Söhbət tapılmadı. Ola bilsin ki, silinib.',
   'error.INVALID_PER_MINUTE': '0 ilə 1000 arasında tam ədəd daxil edin.',
   'error.EMAIL_TAKEN': 'Bu e-poçt ilə hesab artıq mövcuddur.',
   'error.WRONG_CREDENTIALS': 'E-poçt və ya şifrə yanlışdır.',
