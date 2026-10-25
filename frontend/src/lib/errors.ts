@@ -1,5 +1,6 @@
 import {useCallback} from 'react'
 import {ApiError} from './api'
+import {useAuth} from './auth'
 import {dictionaries, format} from './i18n'
 import {useSettings} from './settings'
 
@@ -20,17 +21,20 @@ function partsOf(error: unknown): ErrorParts {
 
 /**
  * The text to show for an error: our translation of its code ("error.CODE" in i18n.ts), else the
- * server's English message, else a generic "Something went wrong".
+ * server's English message, else a generic "Something went wrong". The admin gets "error.CODE.admin"
+ * when it exists, e.g. how to fix the API key; normal users are asked to contact the admin instead.
  */
 export function useErrorText() {
   const { lang, t } = useSettings()
+  const admin = useAuth().user?.role === 'ADMIN'
   return useCallback(
     (error: unknown) => {
       const { code, message, params } = partsOf(error)
-      const translated = code ? (dictionaries[lang] as Record<string, string>)[`error.${code}`] : undefined
+      const dictionary = dictionaries[lang] as Record<string, string>
+      const translated = code ? (admin && dictionary[`error.${code}.admin`]) || dictionary[`error.${code}`] : undefined
       if (translated) return format(translated, params)
       return message || t('common.error')
     },
-    [lang, t],
+    [lang, t, admin],
   )
 }

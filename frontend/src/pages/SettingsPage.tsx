@@ -76,7 +76,9 @@ export function SettingsPage() {
             </span>
           ) : (
             <span className="chip text-amber">
-              <TriangleAlert className="h-3 w-3" /> {t('settings.aiMissing')}
+              <TriangleAlert className="h-3 w-3" />{' '}
+              {/* only the admin can fix the API key */}
+              {user?.role === 'ADMIN' ? t('settings.aiMissingAdmin') : t('settings.aiMissing')}
             </span>
           )}
         </Section>
