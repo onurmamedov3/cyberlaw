@@ -1,8 +1,10 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 import {AnimatePresence, motion} from 'motion/react'
-import {ArrowLeft, BookOpen, ChevronDown, CircleCheck, CircleX, Quote, TriangleAlert} from 'lucide-react'
+import {ArrowLeft, BookOpen, ChevronDown, CircleCheck, Clock, CircleX, Printer, Quote, TriangleAlert} from 'lucide-react'
 import {get} from '../lib/api'
+import {daysLeft} from '../lib/dates'
+import {useErrorText} from '../lib/errors'
 import {useT} from '../lib/settings'
 import {usePolling} from '../lib/usePolling'
 import type {ReportDetail, ReportResult, Verdict} from '../lib/types'
@@ -16,6 +18,7 @@ const VERDICT = {
 
 export function ReportPage() {
   const t = useT()
+  const errorText = useErrorText()
   const { id } = useParams()
   const [filter, setFilter] = useState<Verdict | 'ALL'>('ALL')
   const { data, error } = usePolling(
@@ -24,7 +27,7 @@ export function ReportPage() {
     2500,
   )
 
-  if (error) return <div className="p-10 text-center text-red-300">{error}</div>
+  if (error) return <div className="p-10 text-center text-red-300">{errorText(error)}</div>
   if (!data) return <div className="p-10 text-center text-muted">{t('common.loading')}</div>
 
   const { report, results } = data
@@ -33,9 +36,17 @@ export function ReportPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <Link to="/compliance" className="mb-6 inline-flex items-center gap-2 text-sm text-muted hover:text-neon">
-        <ArrowLeft className="h-4 w-4" /> {t('comp.back')}
-      </Link>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <Link to="/compliance" className="inline-flex items-center gap-2 text-sm text-muted hover:text-neon">
+          <ArrowLeft className="h-4 w-4" /> {t('comp.back')}
+        </Link>
+        {report.status === 'DONE' && (
+          // the browser's print dialog also offers "Save as PDF"
+          <button className="btn btn-ghost py-2" onClick={() => window.print()}>
+            <Printer className="h-4 w-4" /> {t('comp.print')}
+          </button>
+        )}
+      </div>
 
       <motion.div className="glass flex flex-col items-center gap-8 p-8 md:flex-row" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         {report.status === 'DONE' && report.score !== null ? (
@@ -53,7 +64,15 @@ export function ReportPage() {
           <h1 className="text-xl font-bold">{report.policyTitle}</h1>
           <div className="label-mono mt-3">{t('comp.law')}</div>
           <h2 className="text-lg font-semibold text-neon-soft">{report.lawTitle}</h2>
-          {report.status === 'FAILED' && <p className="mt-3 text-sm text-red-300">{report.errorMessage}</p>}
+          {report.policyExpiresAt && (
+            <p className="mt-3 flex items-start gap-2 text-xs text-amber print:hidden">
+              <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {t('comp.expires', { days: daysLeft(report.policyExpiresAt) })}
+            </p>
+          )}
+          {report.status === 'FAILED' && (
+            <p className="mt-3 text-sm text-red-300">{errorText({ code: report.errorCode, message: report.errorMessage })}</p>
+          )}
           <div className="mt-5 grid grid-cols-3 gap-3">
             {(['MET', 'PARTIAL', 'MISSING'] as const).map((v) => {
               const count = v === 'MET' ? report.met : v === 'PARTIAL' ? report.partial : report.missing
@@ -74,7 +93,7 @@ export function ReportPage() {
         </div>
       )}
 
-      <div className="mt-8 flex flex-wrap gap-2">
+      <div className="mt-8 flex flex-wrap gap-2 print:hidden">
         {(['ALL', 'MISSING', 'PARTIAL', 'MET'] as const).map((f) => (
           <button
             key={f}
@@ -102,8 +121,30 @@ function ResultRow({ result }: { result: ReportResult }) {
   const [open, setOpen] = useState(result.status !== 'MET')
   const style = VERDICT[result.status]
   const Icon = style.icon
+  const details = (
+    <div className="space-y-3 border-t border-line px-4 pb-4 pt-3 pl-12 text-sm">
+      <div>
+        <div className="label-mono mb-1">{t('comp.requirement')}</div>
+        <p className="text-slate-300">{result.description}</p>
+      </div>
+      {result.evidence && (
+        <div>
+          <div className="label-mono mb-1">{t('comp.evidence')}</div>
+          <blockquote className="flex gap-2 rounded-lg border border-violet/30 bg-violet/10 p-3 italic text-slate-200">
+            <Quote className="h-4 w-4 shrink-0 text-violet" />
+            {result.evidence}
+          </blockquote>
+        </div>
+      )}
+    </div>
+  )
   return (
-    <motion.div layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className={`glass border-l-4 ${style.border}`}>
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`glass border-l-4 break-inside-avoid ${style.border}`}
+    >
       <button className="flex w-full items-start gap-3 p-4 text-left" onClick={() => setOpen(!open)}>
         <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${style.color}`} />
         <div className="min-w-0 flex-1">
@@ -117,29 +158,17 @@ function ResultRow({ result }: { result: ReportResult }) {
           </div>
           <p className="mt-1 text-sm text-slate-300">{result.explanation}</p>
         </div>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform print:hidden ${open ? 'rotate-180' : ''}`} />
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="space-y-3 border-t border-line px-4 pb-4 pt-3 pl-12 text-sm">
-              <div>
-                <div className="label-mono mb-1">{t('comp.requirement')}</div>
-                <p className="text-slate-300">{result.description}</p>
-              </div>
-              {result.evidence && (
-                <div>
-                  <div className="label-mono mb-1">{t('comp.evidence')}</div>
-                  <blockquote className="flex gap-2 rounded-lg border border-violet/30 bg-violet/10 p-3 italic text-slate-200">
-                    <Quote className="h-4 w-4 shrink-0 text-violet" />
-                    {result.evidence}
-                  </blockquote>
-                </div>
-              )}
-            </div>
+            {details}
           </motion.div>
         )}
       </AnimatePresence>
+      {/* a printed report shows every requirement in full */}
+      {!open && <div className="hidden print:block">{details}</div>}
     </motion.div>
   )
 }

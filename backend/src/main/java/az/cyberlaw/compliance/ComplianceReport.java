@@ -51,6 +51,9 @@ public class ComplianceReport {
 
 	private Integer score;
 
+	@Column(name = "error_code")
+	private String errorCode;
+
 	@Column(name = "error_message")
 	private String errorMessage;
 
@@ -89,8 +92,10 @@ public class ComplianceReport {
 		this.finishedAt = Instant.now();
 	}
 
-	public void fail(String message) {
+	/** The code (ErrorCode or AiErrorCode) lets the UI translate the English message. */
+	public void fail(String code, String message) {
 		this.status = Status.FAILED;
+		this.errorCode = code;
 		this.errorMessage = message;
 		this.finishedAt = Instant.now();
 	}
@@ -141,6 +146,10 @@ public class ComplianceReport {
 
 	public Integer getScore() {
 		return score;
+	}
+
+	public String getErrorCode() {
+		return errorCode;
 	}
 
 	public String getErrorMessage() {

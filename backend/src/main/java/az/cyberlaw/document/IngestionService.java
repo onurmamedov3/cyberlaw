@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import az.cyberlaw.ai.AiException;
 import az.cyberlaw.ai.AiRetry;
+import az.cyberlaw.common.ApiException;
+import az.cyberlaw.common.ErrorCode;
 import az.cyberlaw.config.CyberLawProperties;
 import az.cyberlaw.rag.LegalTextSplitter;
 import az.cyberlaw.rag.LegalTextSplitter.Chunk;
@@ -52,8 +54,7 @@ public class IngestionService {
 		try {
 			String text = extractText(bytes, doc.getOriginalFilename());
 			if (text.isBlank()) {
-				throw new IllegalArgumentException(
-						"No text could be extracted. Scanned PDFs (images) are not supported.");
+				throw new ApiException(ErrorCode.NO_TEXT);
 			}
 			String language = LanguageDetector.detect(text);
 			List<Chunk> chunks = splitter.split(text);
@@ -73,14 +74,24 @@ public class IngestionService {
 			log.info("Indexed '{}' ({} chunks, {}) in {} ms", doc.getTitle(), chunks.size(), language,
 					System.currentTimeMillis() - started);
 		}
-		catch (Exception ex) {
+		catch (ApiException ex) {
 			log.warn("Indexing '{}' failed: {}", doc.getTitle(), ex.getMessage());
-			deleteChunks(documentId);
-			String message = ex instanceof AiException || ex instanceof IllegalArgumentException ? ex.getMessage()
-					: "Could not read this file: " + ex.getMessage();
-			doc.markFailed(message);
-			saveIfStillExists(doc);
+			fail(doc, ex.getCode().name(), ex.getMessage());
 		}
+		catch (AiException ex) {
+			log.warn("Indexing '{}' failed: {}", doc.getTitle(), ex.getMessage());
+			fail(doc, ex.getCode().name(), ex.getMessage());
+		}
+		catch (Exception ex) {
+			log.error("Indexing '{}' failed", doc.getTitle(), ex);
+			fail(doc, ErrorCode.INDEXING_FAILED.name(), ErrorCode.INDEXING_FAILED.message());
+		}
+	}
+
+	private void fail(LibraryDocument doc, String code, String message) {
+		deleteChunks(doc.getId());
+		doc.markFailed(code, message);
+		saveIfStillExists(doc);
 	}
 
 	/** The user may delete a document while it is still being indexed. */
@@ -113,11 +124,17 @@ public class IngestionService {
 				return filename;
 			}
 		};
-		return new TikaDocumentReader(resource).get()
-			.stream()
-			.map(Document::getText)
-			.filter(t -> t != null && !t.isBlank())
-			.collect(Collectors.joining("\n\n"));
+		try {
+			return new TikaDocumentReader(resource).get()
+				.stream()
+				.map(Document::getText)
+				.filter(t -> t != null && !t.isBlank())
+				.collect(Collectors.joining("\n\n"));
+		}
+		catch (RuntimeException ex) {
+			// damaged, encrypted or mislabelled file
+			throw new ApiException(ErrorCode.FILE_UNREADABLE);
+		}
 	}
 
 	private static Document toVectorDocument(LibraryDocument doc, Chunk chunk, String language) {

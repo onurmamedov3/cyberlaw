@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import az.cyberlaw.ai.AiErrorCode;
 import az.cyberlaw.ai.AiException;
 import az.cyberlaw.common.ApiException;
+import az.cyberlaw.common.ErrorCode;
 import az.cyberlaw.compliance.ComplianceDtos.LawDto;
 import az.cyberlaw.compliance.ComplianceDtos.ReportDetailDto;
 import az.cyberlaw.compliance.ComplianceDtos.ReportDto;
@@ -79,12 +80,13 @@ public class ComplianceService {
 	/** Admin action: build the checklist for an official law (runs in the background). */
 	public DocumentDto startExtraction(CurrentUser admin, UUID lawId) {
 		requireAi();
-		LibraryDocument law = documents.findById(lawId).orElseThrow(() -> ApiException.notFound("Document not found."));
+		LibraryDocument law = documents.findById(lawId)
+			.orElseThrow(() -> new ApiException(ErrorCode.DOCUMENT_NOT_FOUND));
 		if (law.getScope() != DocumentScope.OFFICIAL || law.getStatus() != DocumentStatus.READY) {
-			throw ApiException.badRequest("Only indexed documents of the Official Library can have a checklist.");
+			throw new ApiException(ErrorCode.CHECKLIST_NOT_ALLOWED);
 		}
 		if (law.getRequirementsStatus() == RequirementsStatus.EXTRACTING) {
-			throw ApiException.conflict("The checklist is already being generated.");
+			throw new ApiException(ErrorCode.CHECKLIST_RUNNING);
 		}
 		law.setRequirementsStatus(RequirementsStatus.EXTRACTING);
 		documents.save(law);
@@ -96,36 +98,36 @@ public class ComplianceService {
 		requireAi();
 		LibraryDocument policy = documentService.getVisible(user, policyId);
 		if (policy.getStatus() != DocumentStatus.READY) {
-			throw ApiException.badRequest("The policy document is not indexed yet.");
+			throw new ApiException(ErrorCode.POLICY_NOT_READY);
 		}
-		LibraryDocument law = documents.findById(lawId).orElseThrow(() -> ApiException.notFound("Law not found."));
+		LibraryDocument law = documents.findById(lawId).orElseThrow(() -> new ApiException(ErrorCode.LAW_NOT_FOUND));
 		if (law.getScope() != DocumentScope.OFFICIAL || law.getRequirementsStatus() != RequirementsStatus.READY) {
-			throw ApiException.badRequest("This law has no compliance checklist yet.");
+			throw new ApiException(ErrorCode.LAW_NO_CHECKLIST);
 		}
 		int total = (int) requirements.countByDocumentId(lawId);
 		String lang = "az".equals(language) ? "az" : "en";
 		ComplianceReport report = reports.save(new ComplianceReport(user.id(), policyId, lawId, lang, total));
 		runner.run(report.getId());
-		return ReportDto.of(report, policy.getTitle(), law.getTitle());
+		return ReportDto.of(report, policy, law);
 	}
 
 	public List<ReportDto> list(CurrentUser user) {
 		List<ComplianceReport> own = reports.findByOwnerIdOrderByCreatedAtDesc(user.id());
-		Map<UUID, String> titles = titles(own.stream()
+		Map<UUID, LibraryDocument> docs = byId(own.stream()
 			.flatMap(r -> Stream.of(r.getPolicyDocumentId(), r.getLawDocumentId()))
 			.distinct()
 			.toList());
 		return own.stream()
-			.map(r -> ReportDto.of(r, titles.get(r.getPolicyDocumentId()), titles.get(r.getLawDocumentId())))
+			.map(r -> ReportDto.of(r, docs.get(r.getPolicyDocumentId()), docs.get(r.getLawDocumentId())))
 			.toList();
 	}
 
 	public ReportDetailDto get(CurrentUser user, UUID id) {
 		ComplianceReport report = owned(user, id);
-		Map<UUID, String> titles = titles(List.of(report.getPolicyDocumentId(), report.getLawDocumentId()));
+		Map<UUID, LibraryDocument> docs = byId(List.of(report.getPolicyDocumentId(), report.getLawDocumentId()));
 		List<ResultDto> rows = results.findByReportIdOrderByPosition(id).stream().map(ResultDto::of).toList();
-		return new ReportDetailDto(ReportDto.of(report, titles.get(report.getPolicyDocumentId()),
-				titles.get(report.getLawDocumentId())), rows);
+		return new ReportDetailDto(ReportDto.of(report, docs.get(report.getPolicyDocumentId()),
+				docs.get(report.getLawDocumentId())), rows);
 	}
 
 	public void delete(CurrentUser user, UUID id) {
@@ -136,7 +138,7 @@ public class ComplianceService {
 	@EventListener(ApplicationReadyEvent.class)
 	public void failInterruptedReports() {
 		for (ComplianceReport report : reports.findByStatus(ComplianceReport.Status.RUNNING)) {
-			report.fail("Interrupted by a server restart. Please run the check again.");
+			report.fail(ErrorCode.CHECK_INTERRUPTED.name(), ErrorCode.CHECK_INTERRUPTED.message());
 			reports.save(report);
 		}
 	}
@@ -144,13 +146,13 @@ public class ComplianceService {
 	private ComplianceReport owned(CurrentUser user, UUID id) {
 		return reports.findById(id)
 			.filter(r -> r.getOwnerId().equals(user.id()))
-			.orElseThrow(() -> ApiException.notFound("Report not found."));
+			.orElseThrow(() -> new ApiException(ErrorCode.REPORT_NOT_FOUND));
 	}
 
-	private Map<UUID, String> titles(List<UUID> ids) {
-		Map<UUID, String> titles = new HashMap<>();
-		documents.findAllById(ids).forEach(d -> titles.put(d.getId(), d.getTitle()));
-		return titles;
+	private Map<UUID, LibraryDocument> byId(List<UUID> ids) {
+		Map<UUID, LibraryDocument> docs = new HashMap<>();
+		documents.findAllById(ids).forEach(d -> docs.put(d.getId(), d));
+		return docs;
 	}
 
 	private void requireAi() {

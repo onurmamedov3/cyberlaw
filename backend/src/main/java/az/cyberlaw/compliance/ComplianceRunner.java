@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import az.cyberlaw.ai.AiException;
 import az.cyberlaw.ai.StructuredLlm;
+import az.cyberlaw.common.ErrorCode;
 import az.cyberlaw.compliance.ComplianceResult.Verdict;
 import az.cyberlaw.config.CyberLawProperties;
 import az.cyberlaw.rag.RetrievalService;
@@ -92,9 +93,13 @@ public class ComplianceRunner {
 			}
 			report.finish();
 		}
-		catch (RuntimeException ex) {
+		catch (AiException ex) {
 			log.warn("Compliance check {} failed: {}", reportId, ex.getMessage());
-			report.fail(ex instanceof AiException ? ex.getMessage() : "The check failed: " + ex.getMessage());
+			report.fail(ex.getCode().name(), ex.getMessage());
+		}
+		catch (RuntimeException ex) {
+			log.error("Compliance check {} failed", reportId, ex);
+			report.fail(ErrorCode.CHECK_FAILED.name(), ErrorCode.CHECK_FAILED.message());
 		}
 		if (reports.existsById(reportId)) {
 			reports.save(report);

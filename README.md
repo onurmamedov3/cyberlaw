@@ -15,6 +15,8 @@ check their own policies against a law.
 ## Features
 
 - **RAG chat** with live streaming answers, clickable citation chips and a source drawer showing the original passage
+- **Chat history** in the sidebar: reopen, continue, rename or delete earlier chats. Each answer keeps a copy of the
+  passages it cites; when a private document is deleted, its text is removed from saved chats as well
 - **Two-layer knowledge base**
   - *Official Library*: laws curated by the admin (upload, or drop files into `docs/`)
   - *My Documents*: private uploads per user (max 5, auto-deleted after 7 days)
@@ -96,9 +98,12 @@ java -jar target/cyberlaw-backend-0.1.0.jar   # everything on http://localhost:8
 | Property | Default | Meaning |
 |---|---|---|
 | `GEMINI_CHAT_MODEL` (.env) | `gemini-2.5-flash` | any Gemini chat model on your plan |
+| `CHAT_HISTORY_DAYS` (.env) | 0 | delete chats after this many days without activity (0 = keep until the user deletes them) |
+| `CHAT_MAX_QUESTIONS_PER_MINUTE` (.env) | 5 | questions per user per minute (admins are never limited, 0 = no limit); the admin can change it live on the Admin page |
 | `cyberlaw.rag.top-k` | 6 | passages sent to the model per question |
-| `cyberlaw.rag.similarity-threshold` | 0.3 | minimum similarity for a passage |
+| `cyberlaw.rag.similarity-threshold` | 0.5 | minimum similarity for a passage |
 | `cyberlaw.rag.chunk-max-chars` | 2000 | max chunk size (long articles are split) |
+| `cyberlaw.rag.history-messages` | 10 | earlier messages of the conversation sent with each question |
 | `cyberlaw.uploads.max-private-documents` | 5 | per-user upload limit |
 | `cyberlaw.uploads.private-ttl` | 7d | private documents are deleted after this |
 | `cyberlaw.compliance.max-requirements` | 40 | checklist size per law |
@@ -111,13 +116,20 @@ java -jar target/cyberlaw-backend-0.1.0.jar   # everything on http://localhost:8
 | POST | `/api/auth/register`, `/api/auth/login` | returns a JWT |
 | GET | `/api/auth/me` | current user |
 | GET / POST / DELETE | `/api/documents` | list / upload (`scope=PRIVATE\|OFFICIAL`) / delete |
-| POST | `/api/chat/stream` | SSE: `sources`, `token`, `done`, `error` |
-| DELETE | `/api/chat/{conversationId}` | forget a conversation |
+| POST | `/api/chat/stream` | SSE: `sources`, `token`, `conversation` (the saved chat), `done`, `error` |
+| GET / DELETE | `/api/chat/conversations` | my chats / delete all of them |
+| GET / PATCH / DELETE | `/api/chat/conversations/{id}` | open / rename / delete a chat |
+| GET | `/api/config` | limits shown in the UI (upload limit, file size, …) |
 | GET | `/api/compliance/laws` | laws that have a checklist |
 | GET | `/api/compliance/laws/{id}/requirements` | the checklist |
 | POST / GET / DELETE | `/api/compliance/reports` | run / list / delete checks |
 | POST | `/api/admin/documents/{id}/requirements` | admin: generate checklist |
+| GET / PUT | `/api/admin/chat-limit` | admin: read / change the per-user chat limit |
 | GET | `/api/health` | status and whether the Gemini key is set |
+
+Errors always have the same JSON body: `{"code": "DOCUMENT_LIMIT", "message": "…", "params": {"max": 5}}`.
+The UI shows its own translation of the code (`error.CODE` in `frontend/src/lib/i18n.ts`); the codes are listed in
+`ErrorCode.java` and `AiErrorCode.java`.
 
 ## Notes
 

@@ -67,6 +67,12 @@ cyberlaw:
     similarity-threshold: 0.5
     chunk-max-chars: 2000
     history-messages: 10
+  chat:
+    # questions per user per minute, so one user cannot use up the shared Gemini quota;
+    # admins are never limited, 0 = no limit, the admin can change it live on the Admin page
+    max-questions-per-minute: ${CHAT_MAX_QUESTIONS_PER_MINUTE:5}
+    # chats without activity for this many days are deleted; 0 = kept until the user deletes them
+    history-days: ${CHAT_HISTORY_DAYS:0}
   compliance:
     max-requirements: 40
     max-extraction-calls: 8

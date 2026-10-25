@@ -1,30 +1,36 @@
-import type {ReactNode} from 'react'
+import {type ReactNode, useState} from 'react'
 import {AnimatePresence} from 'motion/react'
 import {FileUp, FolderLock, Landmark, ListChecks, ShieldAlert} from 'lucide-react'
 import {del, get} from '../lib/api'
 import {useT} from '../lib/settings'
+import {useAppConfig} from '../lib/config'
 import {usePolling} from '../lib/usePolling'
 import type {LibraryDocument} from '../lib/types'
 import {PageHeader} from '../components/PageHeader'
 import {UploadZone} from '../components/UploadZone'
 import {DocumentCard} from '../components/DocumentCard'
-
-/** Must match cyberlaw.uploads.max-private-documents in application.yml. */
-const MAX_PRIVATE = 5
+import {ErrorNote} from '../components/ErrorNote'
 
 export function DocumentsPage() {
   const t = useT()
-  const { data, setData, poll } = usePolling(
+  const { data, setData, poll, error } = usePolling(
     () => get<LibraryDocument[]>('/documents'),
     (docs) => docs.some((d) => d.status === 'PROCESSING'),
   )
+  const [deleteError, setDeleteError] = useState<unknown>(null)
+  const config = useAppConfig()
   const docs = data ?? []
   const mine = docs.filter((d) => d.scope === 'PRIVATE')
   const official = docs.filter((d) => d.scope === 'OFFICIAL' && d.status === 'READY')
 
   const remove = async (id: string) => {
-    await del(`/documents/${id}`)
-    setData((all) => all?.filter((d) => d.id !== id) ?? null)
+    setDeleteError(null)
+    try {
+      await del(`/documents/${id}`)
+      setData((all) => all?.filter((d) => d.id !== id) ?? null)
+    } catch (e) {
+      setDeleteError(e)
+    }
   }
 
   return (
@@ -33,6 +39,11 @@ export function DocumentsPage() {
 
       <UploadZone
         scope="PRIVATE"
+        fullText={
+          config && mine.length >= config.maxPrivateDocuments
+            ? t('docs.full', { max: config.maxPrivateDocuments })
+            : undefined
+        }
         onUploaded={(doc) => {
           setData((all) => [doc, ...(all ?? [])])
           poll() // keep refreshing until indexing is done
@@ -42,14 +53,19 @@ export function DocumentsPage() {
         <ShieldAlert className="h-4 w-4 shrink-0 text-amber" />
         <div>
           <p>{t('docs.privacy')}</p>
-          <p className="mt-1 text-muted">{t('docs.limits')}</p>
+          {config && (
+            <p className="mt-1 text-muted">
+              {t('docs.limits', { max: config.maxPrivateDocuments, days: config.privateTtlDays })}
+            </p>
+          )}
         </div>
       </div>
+      <ErrorNote error={deleteError ?? error} className="mt-4" />
 
       <Section
         icon={<FolderLock className="h-5 w-5" />}
         title={t('docs.uploaded')}
-        aside={<QuotaMeter used={mine.length} max={MAX_PRIVATE} />}
+        aside={config && <QuotaMeter used={mine.length} max={config.maxPrivateDocuments} />}
       >
         {data && mine.length === 0 && (
           <div className="glass flex flex-col items-center gap-2 p-8 text-center text-muted">

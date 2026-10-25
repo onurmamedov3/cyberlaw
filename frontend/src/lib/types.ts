@@ -17,6 +17,7 @@ export interface LibraryDocument {
   filename: string
   scope: DocScope
   status: DocStatus
+  errorCode: string | null
   errorMessage: string | null
   chunkCount: number
   language: string | null
@@ -39,6 +40,21 @@ export interface Source {
   chapter: string
   text: string
   score: number
+  /** In a saved chat: the private document was deleted, so its text is gone. */
+  deleted?: boolean
+}
+
+/** A saved chat in the sidebar. */
+export interface Conversation {
+  id: string
+  title: string
+  scope: SearchScope
+  updatedAt: string
+}
+
+export interface ConversationDetail {
+  conversation: Conversation
+  messages: { id: string; role: 'user' | 'assistant'; text: string; sources: Source[]; createdAt: string }[]
 }
 
 export interface ChatMessage {
@@ -47,8 +63,11 @@ export interface ChatMessage {
   text: string
   sources?: Source[]
   status: 'searching' | 'streaming' | 'done' | 'error'
+  /** The user stopped the answer before it was finished. */
+  stopped?: boolean
   errorCode?: string
   errorMessage?: string
+  errorParams?: Record<string, unknown>
   question?: string
 }
 
@@ -72,6 +91,8 @@ export interface Report {
   id: string
   policyDocumentId: string
   policyTitle: string | null
+  /** The report is deleted together with its policy; null when the policy never expires. */
+  policyExpiresAt: string | null
   lawDocumentId: string
   lawTitle: string | null
   status: 'RUNNING' | 'DONE' | 'FAILED'
@@ -82,6 +103,7 @@ export interface Report {
   partial: number
   missing: number
   score: number | null
+  errorCode: string | null
   errorMessage: string | null
   createdAt: string
   finishedAt: string | null

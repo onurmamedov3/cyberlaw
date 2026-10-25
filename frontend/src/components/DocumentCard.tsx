@@ -1,13 +1,12 @@
 import type {ReactNode} from 'react'
 import {motion} from 'motion/react'
 import {Clock, FileText, Trash} from 'lucide-react'
+import {daysLeft} from '../lib/dates'
+import {useErrorText} from '../lib/errors'
 import {useT} from '../lib/settings'
 import type {LibraryDocument} from '../lib/types'
+import {useConfirm} from './ConfirmDialog'
 import {StatusBadge} from './StatusBadge'
-
-function daysLeft(expiresAt: string) {
-  return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86_400_000))
-}
 
 export function DocumentCard({
   doc,
@@ -19,6 +18,8 @@ export function DocumentCard({
   children?: ReactNode
 }) {
   const t = useT()
+  const errorText = useErrorText()
+  const confirm = useConfirm()
   return (
     <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="glass glass-hover p-4">
       <div className="flex items-start gap-3">
@@ -44,11 +45,13 @@ export function DocumentCard({
               </span>
             )}
           </div>
-          {doc.status === 'FAILED' && doc.errorMessage && <div className="mt-2 text-xs text-red-300">{doc.errorMessage}</div>}
+          {doc.status === 'FAILED' && (doc.errorCode || doc.errorMessage) && (
+            <div className="mt-2 text-xs text-red-300">{errorText({ code: doc.errorCode, message: doc.errorMessage })}</div>
+          )}
         </div>
         {onDelete && (
           <button
-            onClick={() => window.confirm(t('docs.confirmDelete')) && onDelete()}
+            onClick={async () => (await confirm({ message: t('docs.confirmDelete'), confirmLabel: t('docs.delete') })) && onDelete()}
             className="rounded-lg p-2 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
             aria-label={t('docs.delete')}
             title={t('docs.delete')}

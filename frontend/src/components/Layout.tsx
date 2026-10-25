@@ -1,9 +1,12 @@
 import {useState} from 'react'
-import {NavLink, Outlet} from 'react-router-dom'
-import {ClipboardCheck, FolderLock, Landmark, LogOut, Menu, MessageSquare, Settings, X} from 'lucide-react'
+import {NavLink, Outlet, useLocation, useNavigate} from 'react-router-dom'
+import {ClipboardCheck, FolderLock, Landmark, LogOut, Menu, MessageSquare, Settings, SquarePen, X} from 'lucide-react'
 import {useAuth} from '../lib/auth'
+import {useChat} from '../lib/chat'
 import {useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
+import {ChatHistoryList} from './ChatHistoryList'
+import {ErrorBoundary} from './ErrorBoundary'
 import {Logo} from './Logo'
 
 const links: { to: string; label: TKey; icon: typeof MessageSquare; admin?: boolean }[] = [
@@ -17,19 +20,35 @@ const links: { to: string; label: TKey; icon: typeof MessageSquare; admin?: bool
 export function Layout() {
   const { user, logout } = useAuth()
   const t = useT()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { newChat, conversationId } = useChat()
   const [open, setOpen] = useState(false)
 
+  const startNewChat = () => {
+    newChat()
+    navigate('/chat')
+    setOpen(false)
+  }
+
+  const newChatButton = (
+    <button onClick={startNewChat} className="btn btn-ghost mb-4 w-full justify-start">
+      <SquarePen className="h-4 w-4" /> {t('chat.newChat')}
+    </button>
+  )
+
   const nav = (
-    <nav className="flex flex-1 flex-col gap-1">
+    <nav className="flex flex-col gap-1">
       {links
         .filter((l) => !l.admin || user?.role === 'ADMIN')
         .map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
-            to={to}
+            // "Chat" goes back to the chat on screen, not to an empty one
+            to={to === '/chat' && conversationId ? `/chat/${conversationId}` : to}
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+              `group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-neon/10 text-neon shadow-[inset_2px_0_0_var(--color-neon)]'
                   : 'text-muted hover:bg-white/5 hover:text-white'
@@ -61,40 +80,57 @@ export function Layout() {
   )
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full print:block print:h-auto">
       {/* desktop sidebar */}
-      <aside className="glass m-3 mr-0 hidden w-64 shrink-0 flex-col p-4 md:flex">
-        <div className="mb-8 px-1 pt-1">
+      <aside className="glass m-3 mr-0 hidden w-64 shrink-0 flex-col p-4 md:flex print:hidden">
+        <div className="mb-6 px-1 pt-1">
           <Logo />
         </div>
+        {newChatButton}
         {nav}
+        <ChatHistoryList onNavigate={() => setOpen(false)} />
         {footer}
       </aside>
 
       {/* mobile top bar + drawer */}
-      <div className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-line bg-void/80 px-4 py-3 backdrop-blur md:hidden">
+      <div className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-line bg-void/80 px-4 py-3 backdrop-blur md:hidden print:hidden">
         <Logo />
-        <button className="btn btn-ghost px-2.5" onClick={() => setOpen(true)} aria-label="Menu">
-          <Menu className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="btn btn-ghost px-2.5"
+            onClick={startNewChat}
+            aria-label={t('chat.newChat')}
+            title={t('chat.newChat')}
+          >
+            <SquarePen className="h-5 w-5" />
+          </button>
+          <button className="btn btn-ghost px-2.5" onClick={() => setOpen(true)} aria-label={t('nav.menu')}>
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
       </div>
       {open && (
         <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={() => setOpen(false)}>
           <aside className="glass absolute inset-y-3 left-3 flex w-72 flex-col p-4" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-6 flex items-center justify-between">
               <Logo />
-              <button onClick={() => setOpen(false)} aria-label="Close">
+              <button onClick={() => setOpen(false)} aria-label={t('common.close')}>
                 <X className="h-5 w-5 text-muted" />
               </button>
             </div>
+            {newChatButton}
             {nav}
+            <ChatHistoryList onNavigate={() => setOpen(false)} />
             {footer}
           </aside>
         </div>
       )}
 
-      <main className="min-w-0 flex-1 overflow-y-auto pt-16 md:pt-0">
-        <Outlet />
+      <main className="min-w-0 flex-1 overflow-y-auto pt-16 md:pt-0 print:overflow-visible print:pt-0">
+        {/* a crash shows a message inside the page; going to another page clears it */}
+        <ErrorBoundary key={location.pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   )

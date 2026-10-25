@@ -1,10 +1,14 @@
 import {type ReactNode, useEffect, useState} from 'react'
 import {motion} from 'motion/react'
-import {BrainCircuit, CircleCheck, CircleUser, Languages, Settings, TriangleAlert, Zap} from 'lucide-react'
+import {BrainCircuit, CircleCheck, CircleUser, History, Languages, Settings, Trash, TriangleAlert, Zap} from 'lucide-react'
 import {get} from '../lib/api'
 import {useAuth} from '../lib/auth'
+import {useChat} from '../lib/chat'
+import {useAppConfig} from '../lib/config'
 import {useSettings} from '../lib/settings'
 import type {Lang} from '../lib/i18n'
+import {useConfirm} from '../components/ConfirmDialog'
+import {ErrorNote} from '../components/ErrorNote'
 import {PageHeader} from '../components/PageHeader'
 
 export function SettingsPage() {
@@ -72,10 +76,14 @@ export function SettingsPage() {
             </span>
           ) : (
             <span className="chip text-amber">
-              <TriangleAlert className="h-3 w-3" /> {t('settings.aiMissing')}
+              <TriangleAlert className="h-3 w-3" />{' '}
+              {/* only the admin can fix the API key */}
+              {user?.role === 'ADMIN' ? t('settings.aiMissingAdmin') : t('settings.aiMissing')}
             </span>
           )}
         </Section>
+
+        <ChatHistorySection />
 
         <Section icon={<CircleUser className="h-5 w-5" />} title={t('settings.account')}>
           <div className="text-sm">
@@ -86,6 +94,49 @@ export function SettingsPage() {
         </Section>
       </div>
     </div>
+  )
+}
+
+/** How long chats are kept, and "Delete all chats". */
+function ChatHistorySection() {
+  const { t } = useSettings()
+  const { conversations, deleteAllConversations } = useChat()
+  const config = useAppConfig()
+  const confirm = useConfirm()
+  const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle')
+  const [error, setError] = useState<unknown>(null)
+
+  const clear = async () => {
+    if (!(await confirm({ message: t('settings.confirmClear'), confirmLabel: t('settings.clearHistory') }))) return
+    setState('busy')
+    setError(null)
+    try {
+      await deleteAllConversations()
+      setState('done')
+    } catch (e) {
+      setError(e)
+      setState('idle')
+    }
+  }
+
+  const hint = !config
+    ? undefined
+    : config.historyDays > 0
+      ? t('settings.historyDays', { days: config.historyDays })
+      : t('settings.historyKept')
+
+  return (
+    <Section icon={<History className="h-5 w-5" />} title={t('settings.history')} hint={hint}>
+      <button
+        className="btn btn-danger"
+        onClick={clear}
+        disabled={state === 'busy' || conversations?.length === 0}
+      >
+        <Trash className="h-4 w-4" /> {t('settings.clearHistory')}
+      </button>
+      {state === 'done' && <span className="ml-3 text-sm text-acid">{t('settings.cleared')}</span>}
+      <ErrorNote error={error} className="mt-3 w-full" />
+    </Section>
   )
 }
 

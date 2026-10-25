@@ -6,7 +6,7 @@ import {useCallback, useEffect, useRef, useState} from 'react'
  */
 export function usePolling<T>(load: () => Promise<T>, shouldPoll: (data: T) => boolean, intervalMs = 3000) {
   const [data, setData] = useState<T | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<unknown>(null)
   const [version, setVersion] = useState(0)
   const loadRef = useRef(load)
   loadRef.current = load
@@ -20,7 +20,7 @@ export function usePolling<T>(load: () => Promise<T>, shouldPoll: (data: T) => b
       setError(null)
       return result
     } catch (e) {
-      setError((e as Error).message)
+      setError(e)
       return null
     }
   }, [])

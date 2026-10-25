@@ -1,68 +1,85 @@
 import {type KeyboardEvent, useEffect, useRef, useState} from 'react'
+import {useNavigate, useParams} from 'react-router-dom'
 import {AnimatePresence, motion} from 'motion/react'
 import {
     ArrowRight,
-    Blend,
     BookOpen,
+    Check,
     ChevronRight,
-    FileText,
-    Landmark,
+    Copy,
     LoaderCircle,
+    FileText,
     LockKeyhole,
-    Plus,
     RefreshCw,
+    RotateCcw,
     ShieldCheck,
     Sparkles,
+    Square,
     TriangleAlert
 } from 'lucide-react'
 import {useChat} from '../lib/chat'
+import {copyText} from '../lib/clipboard'
+import {useAppConfig} from '../lib/config'
+import {useErrorText} from '../lib/errors'
 import {useSettings, useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
-import type {ChatMessage, SearchScope, Source} from '../lib/types'
+import type {ChatMessage, Source} from '../lib/types'
 import {Markdown, citedIndexes} from '../components/Markdown'
+import {ScopePicker} from '../components/ScopePicker'
 import {SourceDrawer} from '../components/SourceDrawer'
-
-const SCOPES: { scope: SearchScope; icon: typeof Landmark }[] = [
-  { scope: 'OFFICIAL', icon: Landmark },
-  { scope: 'MINE', icon: FileText },
-  { scope: 'BOTH', icon: Blend },
-]
+import {ErrorNote} from '../components/ErrorNote'
 
 /** Suggestion cards; class names are written out in full so Tailwind can find them. */
-const SUGGESTIONS: { key: TKey; icon: typeof Landmark; tile: string; label: string; hover: string }[] = [
+const SUGGESTIONS: { key: TKey; icon: typeof FileText; tile: string; hover: string }[] = [
   {
     key: 'chat.suggest1',
     icon: FileText,
     tile: 'bg-sky-500/15 text-sky-300',
-    label: 'text-sky-400',
     hover: 'hover:border-sky-400/50 hover:shadow-[0_0_32px_-10px_rgb(56_189_248/0.8)]',
   },
   {
     key: 'chat.suggest2',
     icon: LockKeyhole,
     tile: 'bg-violet-500/15 text-violet-300',
-    label: 'text-violet-400',
     hover: 'hover:border-violet-400/50 hover:shadow-[0_0_32px_-10px_rgb(168_85_247/0.8)]',
   },
   {
     key: 'chat.suggest3',
     icon: ShieldCheck,
     tile: 'bg-emerald-500/15 text-emerald-300',
-    label: 'text-emerald-400',
     hover: 'hover:border-emerald-400/50 hover:shadow-[0_0_32px_-10px_rgb(52_211_153/0.8)]',
   },
   {
     key: 'chat.suggest4',
     icon: TriangleAlert,
     tile: 'bg-amber-500/15 text-amber-300',
-    label: 'text-amber-400',
     hover: 'hover:border-amber-400/50 hover:shadow-[0_0_32px_-10px_rgb(251_191_36/0.8)]',
   },
 ]
 
 export function ChatPage() {
   const t = useT()
-  const { messages, ask, busy } = useChat()
+  const { messages, ask, busy, stop, scope, setScope, conversationId, opening, loadError, openConversation, newChat } =
+    useChat()
+  const { id } = useParams()
+  const navigate = useNavigate()
+
+  // The URL decides what is on screen: /chat/<id> is a saved chat, /chat a new one.
+  useEffect(() => {
+    if (id) openConversation(id)
+    else if (conversationId) newChat()
+    // only when the URL changes; conversationId is read as it is at that moment
+  }, [id])
+
+  // A new chat gets its own address once its first answer is saved.
+  const previousConversation = useRef(conversationId)
+  useEffect(() => {
+    if (!id && conversationId && previousConversation.current === null) {
+      navigate(`/chat/${conversationId}`, { replace: true })
+    }
+    previousConversation.current = conversationId
+  }, [conversationId, id, navigate])
+  const config = useAppConfig()
   const [input, setInput] = useState('')
   const [openSource, setOpenSource] = useState<Source | null>(null)
   const page = useRef<HTMLDivElement>(null)
@@ -90,7 +107,8 @@ export function ChatPage() {
     if (messages.length !== count.current) following.current = true // a new question always jumps down
     count.current = messages.length
     const main = page.current?.closest('main')
-    if (main && following.current) main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' })
+    // the empty page stays at the top, so its title is not scrolled away on phones
+    if (main && following.current && messages.length > 0) main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' })
   }, [messages.length, last?.text, last?.status])
 
   // grow the textarea with its content
@@ -116,19 +134,27 @@ export function ChatPage() {
 
   return (
     <div ref={page} className="flex min-h-full flex-col">
-      <ChatHeader />
-
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4">
         {/* messages */}
         <div className="flex-1 space-y-6 py-6">
-          {messages.length === 0 ? (
+          <ErrorNote error={loadError} />
+          {opening ? (
+            <div className="grid place-items-center pt-24 text-muted">
+              <LoaderCircle className="h-8 w-8 animate-spin text-neon" />
+            </div>
+          ) : messages.length === 0 ? (
             <EmptyState onPick={(q) => send(q)} />
           ) : (
             messages.map((m) =>
               m.role === 'user' ? (
                 <UserBubble key={m.id} text={m.text} />
               ) : (
-                <AssistantMessage key={m.id} message={m} onOpenSource={setOpenSource} />
+                <AssistantMessage
+                  key={m.id}
+                  message={m}
+                  last={m === messages[messages.length - 1]}
+                  onOpenSource={setOpenSource}
+                />
               ),
             )
           )}
@@ -137,8 +163,8 @@ export function ChatPage() {
         {/* composer: pill with a cyan→violet gradient border */}
         <div className="sticky bottom-0 pb-4 pt-6">
           <div className="rounded-[30px] bg-gradient-to-r from-neon via-sky-500 to-violet p-[1.5px] shadow-[0_0_40px_-12px_rgb(56_189_248/0.6)] transition-shadow focus-within:shadow-[0_0_50px_-8px_rgb(168_85_247/0.7)]">
-            <div className="flex items-end gap-3 rounded-[28.5px] bg-[#070b16] py-2 pl-5 pr-2">
-              <Sparkles color="url(#cl-gradient)" className="mb-3 h-6 w-6 shrink-0" />
+            <div className="flex items-end gap-2 rounded-[28.5px] bg-[#070b16] py-2 pl-2.5 pr-2 sm:gap-3">
+              <ScopePicker scope={scope} onChange={setScope} />
               <textarea
                 ref={textarea}
                 rows={1}
@@ -146,16 +172,22 @@ export function ChatPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={onKey}
                 placeholder={t('chat.placeholder')}
-                maxLength={2000}
+                maxLength={config?.maxQuestionLength}
                 className="max-h-[200px] flex-1 resize-none bg-transparent py-3 text-[15px] outline-none placeholder:text-muted/80"
               />
+              {/* while an answer is being written, the send button stops it */}
               <button
                 className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-violet-500 text-white shadow-[0_0_22px_-4px_rgb(56_189_248/0.8)] transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
-                disabled={busy || !input.trim()}
-                onClick={() => send()}
-                aria-label={t('chat.send')}
+                disabled={!busy && !input.trim()}
+                onClick={() => (busy ? stop() : send())}
+                aria-label={busy ? t('chat.stop') : t('chat.send')}
+                title={busy ? t('chat.stop') : t('chat.send')}
               >
-                {busy ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <ChevronRight className="h-6 w-6" strokeWidth={2.5} />}
+                {busy ? (
+                  <Square className="h-4 w-4 fill-current" />
+                ) : (
+                  <ChevronRight className="h-6 w-6" strokeWidth={2.5} />
+                )}
               </button>
             </div>
           </div>
@@ -168,61 +200,6 @@ export function ChatPage() {
 
       <SourceDrawer source={openSource} onClose={() => setOpenSource(null)} />
     </div>
-  )
-}
-
-/** Floating search-scope switch (centred) with the "new chat" button on the right; no bar behind it. */
-function ChatHeader() {
-  const t = useT()
-  const { messages, scope, setScope, newChat } = useChat()
-
-  return (
-    // the empty corners let clicks through to the content scrolling underneath
-    <header className="pointer-events-none sticky top-16 z-20 md:top-0">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4 sm:px-6">
-        <div />
-
-        <div className="pointer-events-auto flex items-center rounded-full border border-line bg-panel/80 p-1.5 shadow-[0_0_30px_-12px_rgb(34_211_238/0.5)] backdrop-blur-xl">
-          {SCOPES.map(({ scope: s, icon: Icon }) => {
-            const active = scope === s
-            return (
-              <button
-                key={s}
-                onClick={() => setScope(s)}
-                aria-pressed={active}
-                title={t(`chat.scope.${s}`)}
-                className={`relative flex items-center gap-2 rounded-full px-3.5 py-2.5 text-sm font-semibold transition-colors sm:px-5 ${
-                  active ? 'text-white' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                {active && (
-                  <motion.span
-                    layoutId="scope-pill"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-sky-400 via-blue-500 to-violet-500 shadow-[0_0_28px_-4px_rgb(56_189_248/0.75)]"
-                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                  />
-                )}
-                <Icon className="relative h-5 w-5" strokeWidth={1.75} />
-                <span className="relative hidden sm:inline">{t(`chat.scope.${s}`)}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        <div className="flex justify-end">
-          {messages.length > 0 && (
-            <button
-              className="btn-round pointer-events-auto backdrop-blur-xl"
-              onClick={newChat}
-              title={t('chat.newChat')}
-              aria-label={t('chat.newChat')}
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          )}
-        </div>
-      </div>
-    </header>
   )
 }
 
@@ -262,7 +239,7 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
       <p className="mx-auto mt-4 max-w-xl text-lg text-slate-300">{t('chat.emptySubtitle')}</p>
 
       <div className="mt-12 grid gap-4 text-left md:grid-cols-2">
-        {SUGGESTIONS.map(({ key, icon: Icon, tile, label, hover }, i) => (
+        {SUGGESTIONS.map(({ key, icon: Icon, tile, hover }, i) => (
           <motion.button
             key={key}
             onClick={() => onPick(t(key))}
@@ -274,10 +251,7 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
             <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-xl ${tile}`}>
               <Icon className="h-8 w-8" strokeWidth={1.75} />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className={`block font-mono text-xs ${label}`}>&gt; query_{String(i + 1).padStart(2, '0')}</span>
-              <span className="mt-1 block text-[15px] leading-snug text-slate-100">{t(key)}</span>
-            </span>
+            <span className="min-w-0 flex-1 text-[15px] leading-snug text-slate-100">{t(key)}</span>
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:border-white/30 group-hover:text-white">
               <ArrowRight className="h-4 w-4" />
             </span>
@@ -298,9 +272,18 @@ function UserBubble({ text }: { text: string }) {
   )
 }
 
-function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onOpenSource: (s: Source) => void }) {
+function AssistantMessage({
+  message,
+  last,
+  onOpenSource,
+}: {
+  message: ChatMessage
+  last: boolean
+  onOpenSource: (s: Source) => void
+}) {
   const t = useT()
-  const { retry, retryCountdown } = useChat()
+  const errorText = useErrorText()
+  const { busy, retry, regenerate, countdown } = useChat()
   const sources = message.sources ?? []
   // only the sources the finished answer cites (retrieval may return unused passages)
   const cited = citedIndexes(message.text)
@@ -331,12 +314,6 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
           )}
         </AnimatePresence>
 
-        {shown.length > 0 && (
-          <div className="label-mono mb-2 text-acid">
-            ✓ {shown.length} {t('chat.foundSources')}
-          </div>
-        )}
-
         {message.text && (
           <div>
             <Markdown text={message.text} onCite={openIndex} />
@@ -344,13 +321,17 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
           </div>
         )}
 
+        {message.stopped && <p className="mt-2 text-xs italic text-muted">{t('chat.stopped')}</p>}
+
         {message.status === 'error' && (
           <div className="mt-2 flex flex-wrap items-center gap-3 rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-red-200">
             <TriangleAlert className="h-4 w-4 shrink-0" />
             <span className="flex-1">
-              {message.errorCode === 'RATE_LIMIT' && retryCountdown !== null
-                ? `${t('chat.retryIn')} ${retryCountdown}${t('chat.seconds')}`
-                : message.errorMessage}
+              {countdown?.id === message.id
+                ? t(message.errorCode === 'TOO_MANY_QUESTIONS' ? 'chat.tooFastRetryIn' : 'chat.retryIn', {
+                    seconds: countdown.seconds,
+                  })
+                : errorText({ code: message.errorCode, message: message.errorMessage, params: message.errorParams })}
             </span>
             <button className="btn btn-danger py-1.5 text-xs" onClick={() => retry(message.id)}>
               <RefreshCw className="h-3.5 w-3.5" /> {t('chat.retry')}
@@ -360,7 +341,9 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
 
         {shown.length > 0 && (
           <div className="mt-4">
-            <div className="label-mono mb-2">{t('chat.sources')}</div>
+            <div className="label-mono mb-2">
+              {t('chat.sources')} · {shown.length}
+            </div>
             <div className="grid gap-2 sm:grid-cols-2">
               {shown.map((s) => (
                 <button
@@ -379,7 +362,7 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
                           {s.articleTitle && ` · ${s.articleTitle}`}
                         </>
                       ) : (
-                        s.text.slice(0, 60) + '…'
+                        s.deleted ? t('source.deletedShort') : s.text.slice(0, 60) + '…'
                       )}
                     </span>
                   </span>
@@ -388,7 +371,54 @@ function AssistantMessage({ message, onOpenSource }: { message: ChatMessage; onO
             </div>
           </div>
         )}
+
+        {message.status === 'done' && (
+          <AnswerActions
+            text={message.text}
+            onRegenerate={last ? () => regenerate(message.id) : undefined}
+            disabled={busy}
+          />
+        )}
       </div>
     </motion.div>
+  )
+}
+
+/** Copy, and Regenerate for the latest answer. */
+function AnswerActions({
+  text,
+  onRegenerate,
+  disabled,
+}: {
+  text: string
+  onRegenerate?: () => void
+  disabled: boolean
+}) {
+  const t = useT()
+  const [copied, setCopied] = useState(false)
+
+  const copy = async () => {
+    await copyText(text)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1500)
+  }
+
+  const action =
+    'inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted transition-colors hover:bg-white/5 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent'
+  return (
+    <div className="mt-3 flex items-center gap-1">
+      {text && (
+        <button className={action} onClick={copy}>
+          {copied ? <Check className="h-3.5 w-3.5 text-acid" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? t('chat.copied') : t('chat.copy')}
+        </button>
+      )}
+      {onRegenerate && (
+        <button className={action} onClick={onRegenerate} disabled={disabled}>
+          <RotateCcw className="h-3.5 w-3.5" />
+          {t('chat.regenerate')}
+        </button>
+      )}
+    </div>
   )
 }

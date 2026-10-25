@@ -7,15 +7,18 @@ import java.time.Instant;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import az.cyberlaw.ai.AiErrorCode;
 import az.cyberlaw.ai.AiException;
 import az.cyberlaw.common.ApiException;
+import az.cyberlaw.common.ErrorCode;
 import az.cyberlaw.config.CyberLawProperties;
 import az.cyberlaw.security.CurrentUser;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,10 +34,14 @@ public class DocumentService {
 
 	private final CyberLawProperties props;
 
-	public DocumentService(LibraryDocumentRepository documents, IngestionService ingestion, CyberLawProperties props) {
+	private final ApplicationEventPublisher events;
+
+	public DocumentService(LibraryDocumentRepository documents, IngestionService ingestion, CyberLawProperties props,
+			ApplicationEventPublisher events) {
 		this.documents = documents;
 		this.ingestion = ingestion;
 		this.props = props;
+		this.events = events;
 	}
 
 	public List<DocumentDto> listVisible(CurrentUser user) {
@@ -46,20 +53,19 @@ public class DocumentService {
 			throw new AiException(AiErrorCode.NOT_CONFIGURED, AiException.describe(AiErrorCode.NOT_CONFIGURED));
 		}
 		if (file == null || file.isEmpty()) {
-			throw ApiException.badRequest("Please choose a file.");
+			throw new ApiException(ErrorCode.FILE_MISSING);
 		}
 		String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "document";
 		if (!ALLOWED_EXTENSIONS.contains(extension(filename))) {
-			throw ApiException.badRequest("Unsupported file type. Use PDF, DOCX or TXT.");
+			throw new ApiException(ErrorCode.FILE_TYPE);
 		}
 		if (scope == DocumentScope.OFFICIAL && !user.admin()) {
-			throw ApiException.forbidden("Only the admin can add documents to the Official Library.");
+			throw new ApiException(ErrorCode.OFFICIAL_ADMIN_ONLY);
 		}
 		if (scope == DocumentScope.PRIVATE
 				&& documents.countByOwnerIdAndScope(user.id(), DocumentScope.PRIVATE) >= props.uploads()
 					.maxPrivateDocuments()) {
-			throw ApiException.badRequest("You can keep at most " + props.uploads().maxPrivateDocuments()
-					+ " private documents. Delete one first.");
+			throw new ApiException(ErrorCode.DOCUMENT_LIMIT, Map.of("max", props.uploads().maxPrivateDocuments()));
 		}
 
 		byte[] bytes;
@@ -67,13 +73,13 @@ public class DocumentService {
 			bytes = file.getBytes();
 		}
 		catch (IOException ex) {
-			throw ApiException.badRequest("Could not read the uploaded file.");
+			throw new ApiException(ErrorCode.FILE_UNREADABLE);
 		}
 		String sha = sha256(bytes);
 		boolean duplicate = scope == DocumentScope.OFFICIAL ? documents.existsBySha256AndScope(sha, scope)
 				: documents.existsBySha256AndOwnerId(sha, user.id());
 		if (duplicate) {
-			throw ApiException.conflict("This file has already been uploaded.");
+			throw new ApiException(ErrorCode.DUPLICATE_FILE);
 		}
 
 		String finalTitle = (title != null && !title.isBlank()) ? title.trim() : titleFromFilename(filename);
@@ -94,11 +100,11 @@ public class DocumentService {
 	}
 
 	public void delete(CurrentUser user, UUID id) {
-		LibraryDocument doc = documents.findById(id).orElseThrow(() -> ApiException.notFound("Document not found."));
+		LibraryDocument doc = documents.findById(id).orElseThrow(() -> new ApiException(ErrorCode.DOCUMENT_NOT_FOUND));
 		boolean allowed = doc.getScope() == DocumentScope.OFFICIAL ? user.admin()
 				: user.id().equals(doc.getOwnerId()) || user.admin();
 		if (!allowed) {
-			throw ApiException.forbidden("You cannot delete this document.");
+			throw new ApiException(ErrorCode.DOCUMENT_DELETE_FORBIDDEN);
 		}
 		deleteWithChunks(doc);
 	}
@@ -106,12 +112,13 @@ public class DocumentService {
 	public void deleteWithChunks(LibraryDocument doc) {
 		ingestion.deleteChunks(doc.getId());
 		documents.delete(doc);
+		events.publishEvent(new DocumentDeleted(doc.getId(), doc.getScope()));
 	}
 
 	public LibraryDocument getVisible(CurrentUser user, UUID id) {
-		LibraryDocument doc = documents.findById(id).orElseThrow(() -> ApiException.notFound("Document not found."));
+		LibraryDocument doc = documents.findById(id).orElseThrow(() -> new ApiException(ErrorCode.DOCUMENT_NOT_FOUND));
 		if (!doc.isVisibleTo(user.id())) {
-			throw ApiException.notFound("Document not found.");
+			throw new ApiException(ErrorCode.DOCUMENT_NOT_FOUND);
 		}
 		return doc;
 	}

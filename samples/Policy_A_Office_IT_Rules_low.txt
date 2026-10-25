@@ -1,0 +1,38 @@
+NOVA TRADE LLC - OFFICE IT RULES
+
+Expected result against the GDPR example excerpt: LOW (about 0-20 %).
+This document is a test file for the CyberLaw compliance checker. It is a typical office IT
+policy that barely touches data protection.
+
+1. Purpose
+These rules explain how employees of Nova Trade LLC use company computers, phones and the
+internet. They apply to all staff and interns.
+
+2. Passwords
+Every employee has a personal account. Passwords must have at least 8 characters and must not
+be shared with colleagues. Passwords are changed every six months.
+
+3. Computers and screens
+Lock your screen when you leave your desk. Do not install games or unlicensed software.
+Antivirus software is installed on every computer and must not be switched off.
+
+4. USB drives and printing
+Personal USB drives may not be connected to company computers. Collect your printouts from the
+printer immediately.
+
+5. Internet and e-mail
+The internet may be used for work and, in moderation, for personal purposes during breaks.
+Do not open attachments from unknown senders. Chain letters and advertising must not be
+forwarded.
+
+6. Customer files
+Customer files are stored on the shared drive of the sales department. Staff should treat
+customer information as confidential and not discuss it outside the company.
+
+7. Lost or broken equipment
+A lost or stolen laptop or phone must be reported to the IT department on the same day so that
+a replacement can be ordered.
+
+8. Responsibility
+The head of IT is responsible for these rules. Breaking the rules may lead to disciplinary
+measures.

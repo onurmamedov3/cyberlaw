@@ -1,0 +1,55 @@
+NOVA TRADE LLC - DATA PROTECTION BASICS
+
+Expected result against the GDPR example excerpt: MEDIUM (about 40-60 %).
+This document is a test file for the CyberLaw compliance checker. About a third of the
+requirements are covered fully, a third only partly or vaguely, and a third are missing.
+
+1. Purpose
+This policy describes how Nova Trade LLC handles personal data of customers and employees.
+
+2. Why we collect personal data
+We collect personal data only for specified purposes that are written down before the data is
+collected: delivering orders, invoicing, customer support and employment. Data collected for one
+of these purposes is not used for other, unrelated purposes.
+
+3. Collecting only what we need
+Forms ask only for the data needed for the purpose. For an order we ask for name, delivery
+address, e-mail and phone number; we do not ask for date of birth or ID numbers.
+
+4. Legal basis
+Every processing activity has a recorded legal basis before it starts: the customer's consent,
+the performance of a contract, a legal obligation (for example tax law) or our legitimate
+interests.
+
+5. Consent
+Where we rely on consent, for example for the newsletter, the consent is recorded together with
+the date.
+
+6. Privacy notice
+Our privacy notice is shown on the website and on every form where personal data is collected.
+It states who we are and how to contact us, the purposes and legal basis of the processing, who
+receives the data, how long the data is kept, the rights of individuals (access, correction,
+deletion, withdrawing consent) and the right to complain to the supervisory authority.
+
+7. Requests from individuals
+Individuals may ask for a copy of their personal data, for the correction of wrong data or for
+the deletion of their data. Requests are answered within one month of receipt.
+
+8. How long we keep data
+Personal data is kept only as long as needed for business purposes and then deleted.
+
+9. Security
+We protect personal data with appropriate security: personal user accounts, passwords and
+antivirus software. The file server is backed up every week.
+
+10. Suppliers
+We work only with reputable suppliers (hosting, payroll, delivery) and sign a contract with them.
+
+11. Incidents
+Security incidents involving personal data are reported to management, which decides whether
+the authorities need to be informed.
+
+12. Data outside the country
+Personal data is not transferred to countries outside the European Union. If a transfer becomes
+necessary, it will only take place with the standard data protection clauses adopted by the
+European Commission.

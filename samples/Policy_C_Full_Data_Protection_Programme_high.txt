@@ -1,0 +1,132 @@
+NOVA TRADE LLC - DATA PROTECTION PROGRAMME
+
+Expected result against the GDPR example excerpt: HIGH (about 90-100 %).
+This document is a test file for the CyberLaw compliance checker. It addresses every requirement
+of the GDPR example excerpt explicitly.
+
+1. Purpose and accountability
+This programme sets out how Nova Trade LLC, as controller, complies with the data protection
+principles and how it demonstrates compliance. The Data Protection Officer (DPO) keeps a
+compliance file with this programme, the records of processing, DPIAs, the breach register and
+training records. An internal audit checks compliance every year and reports to the board.
+
+2. Lawfulness, fairness and transparency
+Personal data is processed lawfully, fairly and transparently. Individuals are always told, in
+clear and plain language, what we do with their data before or when it is collected.
+
+3. Purpose limitation
+Every processing activity has specified, explicit and legitimate purposes, recorded before the
+processing starts. Data is never used for a new purpose that is incompatible with the original
+one; a new purpose requires a documented compatibility assessment approved by the DPO.
+
+4. Data minimisation
+We collect only data that is adequate, relevant and limited to what is necessary for the
+purpose. Every new form and system field is reviewed by the DPO before it goes live.
+
+5. Accuracy
+Customers can update their data in their account at any time. Data owners review the accuracy of
+their data sets every year, and inaccurate data is corrected or erased without delay.
+
+6. Storage limitation and retention schedule
+Personal data is kept no longer than necessary, according to our retention schedule: customer
+and order records 6 years after the end of the contract (tax law), job applications 6 months
+after the recruitment decision, CCTV recordings 30 days, newsletter data until consent is
+withdrawn. Data is deleted or anonymised automatically at the end of the retention period.
+
+7. Lawful basis
+Before any processing starts, its lawful basis is recorded in the records of processing:
+consent, performance of a contract, legal obligation, vital interests, public interest or
+legitimate interests. For legitimate interests, a balancing test against the rights of the
+individual is documented.
+
+8. Consent
+Where processing is based on consent, we keep proof of consent: who consented, when, how and
+the exact wording shown. Individuals are told before consenting that they can withdraw consent at
+any time. Withdrawing consent is as easy as giving it: one click on the link in every e-mail or
+one switch in the account settings. Processing based on that consent stops within 48 hours.
+
+9. Privacy notice
+When we collect personal data we give individuals a privacy notice with: our identity and
+contact details; the contact details of the DPO; the purposes and the legal basis of the
+processing; the recipients of the data; any transfer to a third country and the safeguards used;
+the storage period; the rights of access, rectification and erasure; the right to withdraw
+consent; and the right to lodge a complaint with the supervisory authority.
+
+10. Rights of individuals: access, rectification and erasure
+Individuals can ask for confirmation whether we process their data and receive access to it and a
+free copy. Inaccurate data is rectified and incomplete data completed without undue delay. Data is
+erased without undue delay when it is no longer necessary, when consent is withdrawn or when it
+was processed unlawfully. Every request is answered without undue delay and in any event within
+one month of receipt. If a request is complex, the period can be extended by two further months;
+the individual is informed of the extension and the reasons within the first month. All requests
+are logged in a request register.
+
+11. Data protection by design and by default
+Every new system, product or change goes through a privacy-by-design checklist approved by the
+DPO, covering minimisation, pseudonymisation, access control and retention. By default, only the
+personal data necessary for each specific purpose is processed: optional fields are off by
+default and customer profiles are private by default. Analytics use pseudonymised identifiers.
+
+12. Processors and sub-processors
+We use only processors that provide sufficient guarantees, checked with a security questionnaire
+before the contract. Every processor signs a written data processing agreement which requires
+it to: process data only on our documented instructions; bind its staff to confidentiality; take
+the security measures of section 14; not engage a sub-processor without our prior written
+authorisation; assist us with requests from individuals and with personal data breaches; delete
+or return all personal data at the end of the services; and provide all information needed to
+demonstrate compliance, including audits and inspections.
+
+13. Records of processing activities
+The DPO maintains a written, electronic record of all processing activities. For each activity it
+contains: our name and contact details and those of the DPO; the purposes; the categories of
+individuals and of personal data; the categories of recipients; transfers to third countries; the
+time limits for erasure; and a general description of the security measures. The record is
+reviewed every quarter and is made available to the supervisory authority on request.
+
+14. Security of processing
+Security measures are based on a risk assessment and include: encryption of personal data at
+rest (AES-256) and in transit (TLS 1.2 or higher); pseudonymisation where possible; role-based
+access with least privilege and multi-factor authentication; redundant servers and monitoring to
+ensure the ongoing confidentiality, integrity, availability and resilience of our systems; daily
+encrypted backups, with restore tests every quarter so that availability and access to personal
+data can be restored within 4 hours after an incident; and a process for regularly testing,
+assessing and evaluating the effectiveness of the measures, with quarterly vulnerability scans
+and a yearly external penetration test. Employees and contractors with access to personal data
+sign confidentiality agreements, are trained every year and may process data only on our
+instructions.
+
+15. Personal data breaches
+Every employee reports a suspected breach to the DPO immediately. The DPO assesses the risk and,
+unless the breach is unlikely to result in a risk to individuals, notifies the supervisory
+authority without undue delay and no later than 72 hours after we become aware of it. The
+notification describes the nature of the breach, the categories and approximate number of
+individuals and records concerned, the contact details of the DPO, the likely consequences and
+the measures taken. If notification takes longer than 72 hours, the reasons for the delay are
+included. Our processors must notify us without undue delay, and at the latest within 24 hours.
+Every breach, including those not notified, is documented in the breach register with its facts,
+effects and the remedial action taken. When a breach is likely to result in a high risk to
+individuals, we inform the affected individuals without undue delay, in clear and plain language.
+
+16. Data protection impact assessment
+Before any processing that is likely to result in a high risk, in particular profiling or other
+systematic evaluation, large-scale processing of special categories of data, or large-scale
+monitoring of publicly accessible areas, we carry out a data protection impact assessment
+(DPIA). The DPIA describes the processing and its purposes, assesses its necessity and
+proportionality and the risks to individuals, and sets out the measures to address the risks.
+The DPO advises on every DPIA.
+
+17. Data Protection Officer
+Nova Trade LLC has designated a Data Protection Officer, who reports directly to the board and
+acts independently. The DPO's contact details (dpo@novatrade.example) are published on our
+website and have been communicated to the supervisory authority.
+
+18. International transfers
+Personal data is transferred to a third country only if the European Commission has adopted an
+adequacy decision for it, or with appropriate safeguards: the standard data protection clauses
+adopted by the Commission, together with a transfer impact assessment, and only where individuals
+have enforceable rights and effective legal remedies. All transfers are listed in the records of
+processing.
+
+19. Training and review
+All staff complete data protection training when they join and every year after. This programme
+is reviewed every year by the DPO and approved by the board.

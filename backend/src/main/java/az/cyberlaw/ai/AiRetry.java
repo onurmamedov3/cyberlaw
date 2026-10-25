@@ -23,6 +23,9 @@ public final class AiRetry {
 				return action.get();
 			}
 			catch (RuntimeException ex) {
+				if (!AiErrorCode.isAiError(ex)) {
+					throw ex; // e.g. a database error: not Gemini's fault, and waiting won't help
+				}
 				AiErrorCode code = AiErrorCode.classify(ex);
 				if (code != AiErrorCode.RATE_LIMIT || attempt >= MAX_ATTEMPTS) {
 					throw AiException.from(ex);
