@@ -30,33 +30,29 @@ import {SourceDrawer} from '../components/SourceDrawer'
 import {ErrorNote} from '../components/ErrorNote'
 
 /** Suggestion cards; class names are written out in full so Tailwind can find them. */
-const SUGGESTIONS: { key: TKey; icon: typeof FileText; tile: string; label: string; hover: string }[] = [
+const SUGGESTIONS: { key: TKey; icon: typeof FileText; tile: string; hover: string }[] = [
   {
     key: 'chat.suggest1',
     icon: FileText,
     tile: 'bg-sky-500/15 text-sky-300',
-    label: 'text-sky-400',
     hover: 'hover:border-sky-400/50 hover:shadow-[0_0_32px_-10px_rgb(56_189_248/0.8)]',
   },
   {
     key: 'chat.suggest2',
     icon: LockKeyhole,
     tile: 'bg-violet-500/15 text-violet-300',
-    label: 'text-violet-400',
     hover: 'hover:border-violet-400/50 hover:shadow-[0_0_32px_-10px_rgb(168_85_247/0.8)]',
   },
   {
     key: 'chat.suggest3',
     icon: ShieldCheck,
     tile: 'bg-emerald-500/15 text-emerald-300',
-    label: 'text-emerald-400',
     hover: 'hover:border-emerald-400/50 hover:shadow-[0_0_32px_-10px_rgb(52_211_153/0.8)]',
   },
   {
     key: 'chat.suggest4',
     icon: TriangleAlert,
     tile: 'bg-amber-500/15 text-amber-300',
-    label: 'text-amber-400',
     hover: 'hover:border-amber-400/50 hover:shadow-[0_0_32px_-10px_rgb(251_191_36/0.8)]',
   },
 ]
@@ -243,7 +239,7 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
       <p className="mx-auto mt-4 max-w-xl text-lg text-slate-300">{t('chat.emptySubtitle')}</p>
 
       <div className="mt-12 grid gap-4 text-left md:grid-cols-2">
-        {SUGGESTIONS.map(({ key, icon: Icon, tile, label, hover }, i) => (
+        {SUGGESTIONS.map(({ key, icon: Icon, tile, hover }, i) => (
           <motion.button
             key={key}
             onClick={() => onPick(t(key))}
@@ -255,10 +251,7 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
             <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-xl ${tile}`}>
               <Icon className="h-8 w-8" strokeWidth={1.75} />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className={`block font-mono text-xs ${label}`}>&gt; query_{String(i + 1).padStart(2, '0')}</span>
-              <span className="mt-1 block text-[15px] leading-snug text-slate-100">{t(key)}</span>
-            </span>
+            <span className="min-w-0 flex-1 text-[15px] leading-snug text-slate-100">{t(key)}</span>
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:border-white/30 group-hover:text-white">
               <ArrowRight className="h-4 w-4" />
             </span>
