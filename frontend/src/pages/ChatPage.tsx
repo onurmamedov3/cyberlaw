@@ -139,39 +139,35 @@ export function ChatPage() {
           )}
         </div>
 
-        {/* The search scope and send control sit below the writing area. */}
+        {/* Search scope, writing area and send control share one composer. */}
         <div className="chat-composer">
           <div className="composer-box">
-            <div>
-              <textarea
-                ref={textarea}
-                rows={1}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={onKey}
-                placeholder={t('chat.placeholder')}
-                maxLength={config?.maxQuestionLength}
-                aria-label={t('chat.placeholder')}
-                className="chat-textarea"
-              />
-              <div className="flex items-end justify-between gap-3 px-3 pb-3">
-              <ScopePicker scope={scope} onChange={setScope} />
-              {/* while an answer is being written, the send button stops it */}
-              <button
-                className="composer-send shrink-0"
-                disabled={!busy && !input.trim()}
-                onClick={() => (busy ? stop() : send())}
-                aria-label={busy ? t('chat.stop') : t('chat.send')}
-                title={busy ? t('chat.stop') : t('chat.send')}
-              >
-                {busy ? (
-                  <Square className="h-4 w-4 fill-current" />
-                ) : (
-                  <ChevronRight className="h-6 w-6" strokeWidth={2.5} />
-                )}
-              </button>
-              </div>
-            </div>
+            <ScopePicker scope={scope} onChange={setScope} />
+            <textarea
+              ref={textarea}
+              rows={1}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={onKey}
+              placeholder={t('chat.placeholder')}
+              maxLength={config?.maxQuestionLength}
+              aria-label={t('chat.placeholder')}
+              className="chat-textarea"
+            />
+            {/* while an answer is being written, the send button stops it */}
+            <button
+              className="composer-send shrink-0"
+              disabled={!busy && !input.trim()}
+              onClick={() => (busy ? stop() : send())}
+              aria-label={busy ? t('chat.stop') : t('chat.send')}
+              title={busy ? t('chat.stop') : t('chat.send')}
+            >
+              {busy ? (
+                <Square className="h-4 w-4 fill-current" />
+              ) : (
+                <ChevronRight className="h-6 w-6" strokeWidth={2.5} />
+              )}
+            </button>
           </div>
           <p className="mt-3 flex items-center justify-center gap-2 text-center text-xs text-muted">
             <ShieldCheck className="h-4 w-4 shrink-0 text-muted" />

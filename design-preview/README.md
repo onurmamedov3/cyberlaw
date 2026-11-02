@@ -27,11 +27,19 @@ The blue design is committed on `design/blue-workspace`; the green design is com
 
 Switch normally from the main project folder with `git switch design/legal-workspace` or `git switch design/blue-workspace`. Run `npm.cmd run dev` in `frontend`; its API proxy points to the existing backend on port 8080. The gallery opens directly from disk.
 
+## Composer refinements
+
+The search scope sits inside the left edge of the composer, next to the writing area; Send stays on the right. On narrow screens the scope keeps its icon, dropdown arrow and accessible label while leaving room for typing.
+
+Focusing the writing area changes the existing outer border colour. The duplicate inner outline and outer focus halo are removed; keyboard focus indicators remain on the other controls.
+
+Focused browser checks: [composer-verification.json](composer-verification.json).
+
 ## Validation
 
 - `npm.cmd run typecheck` passes.
 - `npm.cmd run build` passes, with Vite's bundle-size advisory for the existing main JavaScript chunk.
 - [Browser results](verification.json): registration fields, login payload, search scope options, streamed answers, citations, compliance navigation, report filters, mobile navigation and phone-width overflow checks.
-- Twenty screenshots cover desktop and mobile, including English and Azerbaijani.
+- Twenty-two screenshots cover desktop and mobile, including English and Azerbaijani.
 
 Screenshots render the actual React interface using isolated sample API responses. No real account, documents, or backend records were changed. External fonts were disabled during capture, so the configured system fallbacks appear. Live backend and AI calls were not retested.

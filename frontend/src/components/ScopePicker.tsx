@@ -37,11 +37,12 @@ export function ScopePicker({ scope, onChange }: { scope: SearchScope; onChange:
         onClick={() => setOpen(!open)}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-label={`${t('chat.scope')}: ${t(`chat.scope.${scope}`)}`}
         title={`${t('chat.scope')}: ${t(`chat.scope.${scope}`)}`}
         className="flex h-9 items-center gap-2 rounded-md border border-line bg-void/70 px-2.5 text-xs font-medium text-ink transition-colors hover:border-neon/50 hover:text-ink"
       >
         <Current className="h-4.5 w-4.5 text-neon" strokeWidth={1.9} />
-        <span className="inline">{t(`chat.scope.${scope}`)}</span>
+        <span className="hidden sm:inline">{t(`chat.scope.${scope}`)}</span>
         <ChevronDown className={`h-3.5 w-3.5 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
