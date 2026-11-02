@@ -35,11 +35,19 @@ Focusing the writing area changes the existing outer border colour. The duplicat
 
 Focused browser checks: [composer-verification.json](composer-verification.json).
 
+## Settings refinements
+
+Language choices and the animation toggle align to the right of their descriptions on larger screens. On phones the controls stack below the descriptions, with the two language buttons arranged vertically.
+
+The AI model connection panel and its connection-status request are limited to admin accounts. Log out is a bordered button with its icon and label centered in both the desktop sidebar and mobile drawer.
+
+Role, layout and interaction checks: [settings-verification.json](settings-verification.json).
+
 ## Validation
 
 - `npm.cmd run typecheck` passes.
 - `npm.cmd run build` passes, with Vite's bundle-size advisory for the existing main JavaScript chunk.
 - [Browser results](verification.json): registration fields, login payload, search scope options, streamed answers, citations, compliance navigation, report filters, mobile navigation and phone-width overflow checks.
-- Twenty-two screenshots cover desktop and mobile, including English and Azerbaijani.
+- Twenty-five screenshots cover desktop and mobile, including English and Azerbaijani.
 
 Screenshots render the actual React interface using isolated sample API responses. No real account, documents, or backend records were changed. External fonts were disabled during capture, so the configured system fallbacks appear. Live backend and AI calls were not retested.

@@ -68,7 +68,7 @@ export function Layout() {
           <div className="truncate text-xs text-muted">{user?.email}</div>
         </div>
       </div>
-      <button onClick={logout} className="flex w-full items-center gap-2 rounded-md px-1 py-2 text-xs text-muted transition-colors hover:text-ink">
+      <button onClick={logout} className="btn sidebar-logout w-full">
         <LogOut className="h-4 w-4" /> {t('nav.logout')}
       </button>
     </div>

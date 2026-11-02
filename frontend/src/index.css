@@ -108,6 +108,8 @@ button:not(:disabled) { cursor: pointer; }
   .auth-story .brand-mark { background: #023e8a; color: #caf0f8; }
   .workspace-sidebar .btn-neon { background: #48cae4; color: #03045e; }
   .workspace-sidebar .btn-neon:not(:disabled):hover { background: #90e0ef; }
+  .sidebar-logout { border-color: var(--color-ocean); background: #023e8a; color: #caf0f8; }
+  .sidebar-logout:hover { border-color: var(--color-aqua); background: #03045e; }
   .workspace-sidebar .input { background: #023e8a; border-color: #0096c7; color: #caf0f8; }
   .workspace-sidebar :focus-visible,
   .auth-story :focus-visible { outline-color: #48cae4; }
