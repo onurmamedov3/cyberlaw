@@ -65,12 +65,12 @@ export function CompliancePage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="workspace-page">
       <PageHeader icon={<ClipboardCheck className="h-6 w-6" />} title={t('comp.title')} subtitle={t('comp.subtitle')} />
 
       <motion.div className="glass relative overflow-hidden p-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="grid items-end gap-4 md:grid-cols-[1fr_auto_1fr_auto]">
-          <label className="block">
+        <div className="grid items-end gap-4 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto]">
+          <label className="block min-w-0">
             <span className="label-mono mb-1.5 block">{t('comp.policy')}</span>
             <select className="input" value={policyId} onChange={(e) => setPolicyId(e.target.value)}>
               <option value="">{t('comp.choosePolicy')}</option>
@@ -81,8 +81,8 @@ export function CompliancePage() {
               ))}
             </select>
           </label>
-          <div className="hidden pb-3 font-display text-sm font-bold text-violet md:block">{t('comp.vs').toUpperCase()}</div>
-          <label className="block">
+          <div className="hidden pb-3 text-xs font-medium text-muted xl:block">{t('comp.vs')}</div>
+          <label className="block min-w-0">
             <span className="label-mono mb-1.5 block">{t('comp.law')}</span>
             <select className="input" value={lawId} onChange={(e) => setLawId(e.target.value)}>
               <option value="">{t('comp.chooseLaw')}</option>
@@ -140,7 +140,7 @@ export function CompliancePage() {
                 </div>
                 {r.status === 'RUNNING' && (
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
-                    <div className="scan-bar h-full rounded-full bg-gradient-to-r from-neon to-violet transition-all" style={{ width: `${r.total ? (r.processed / r.total) * 100 : 5}%` }} />
+                    <div className="scan-bar h-full rounded-full bg-neon transition-all" style={{ width: `${r.total ? (r.processed / r.total) * 100 : 5}%` }} />
                   </div>
                 )}
                 {r.status === 'DONE' && (

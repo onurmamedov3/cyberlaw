@@ -61,7 +61,7 @@ function Dialog({ request, onClose }: { request: Request; onClose: (confirmed: b
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-message"
-        className="glass w-full max-w-sm p-6 shadow-[0_0_60px_-20px_var(--color-danger)]"
+        className="glass w-full max-w-sm p-6"
         initial={{ scale: 0.95, y: 8 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.95, y: 8 }}

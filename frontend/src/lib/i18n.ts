@@ -2,6 +2,10 @@ export type Lang = 'az' | 'en'
 
 const en = {
   // brand
+  'workspace.label': 'Legal workspace',
+  'workspace.research': 'Research & compliance',
+  'workspace.start': 'A place to begin',
+  'workspace.authTitle': 'Clarity in a complex legal landscape.',
   'brand.tagline': 'AI assistant for cybersecurity law & compliance',
 
   // navigation
@@ -34,7 +38,7 @@ const en = {
   'auth.name': 'Your name',
   'auth.noAccount': "Don't have an account?",
   'auth.haveAccount': 'Already have an account?',
-  'auth.welcome': 'Secure access to the legal intelligence terminal',
+  'auth.welcome': 'Welcome back to your legal workspace.',
   'auth.passwordHint': 'At least 8 characters',
   'auth.feature1': 'Answers grounded in real laws, with article citations',
   'auth.feature2': 'Ask about your own policies and rules',
@@ -160,7 +164,7 @@ const en = {
   'settings.language': 'Interface language',
   'settings.languageHint': 'Answers follow the language of your question.',
   'settings.animations': 'Animations',
-  'settings.animationsHint': 'Animated grid, glow and glitch effects',
+  'settings.animationsHint': 'Subtle transitions and progress indicators',
   'settings.account': 'Account',
   'settings.aiStatus': 'AI model',
   'settings.aiOk': 'Connected',
@@ -236,6 +240,10 @@ const en = {
 export type TKey = keyof typeof en
 
 const az: Record<TKey, string> = {
+  'workspace.label': 'Hüquqi iş məkanı',
+  'workspace.research': 'Araşdırma və uyğunluq',
+  'workspace.start': 'Başlamaq üçün',
+  'workspace.authTitle': 'Mürəkkəb hüquqi məsələlərə aydın baxış.',
   'brand.tagline': 'Kibertəhlükəsizlik hüququ və uyğunluq üzrə AI köməkçi',
 
   'nav.chat': 'Söhbət',
@@ -265,7 +273,7 @@ const az: Record<TKey, string> = {
   'auth.name': 'Adınız',
   'auth.noAccount': 'Hesabınız yoxdur?',
   'auth.haveAccount': 'Artıq hesabınız var?',
-  'auth.welcome': 'Hüquqi intellekt terminalına təhlükəsiz giriş',
+  'auth.welcome': 'Hüquqi iş məkanınıza xoş gəlmisiniz.',
   'auth.passwordHint': 'Ən azı 8 simvol',
   'auth.feature1': 'Real qanunlara əsaslanan, maddə istinadlı cavablar',
   'auth.feature2': 'Öz siyasət və qaydalarınız barədə sual verin',
@@ -385,7 +393,7 @@ const az: Record<TKey, string> = {
   'settings.language': 'İnterfeys dili',
   'settings.languageHint': 'Cavablar sualınızın dilində verilir.',
   'settings.animations': 'Animasiyalar',
-  'settings.animationsHint': 'Hərəkətli şəbəkə, parıltı və glitch effektləri',
+  'settings.animationsHint': 'Yumşaq keçidlər və irəliləyiş göstəriciləri',
   'settings.account': 'Hesab',
   'settings.aiStatus': 'AI modeli',
   'settings.aiOk': 'Qoşulub',

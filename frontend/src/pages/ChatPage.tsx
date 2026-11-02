@@ -13,7 +13,7 @@ import {
     RefreshCw,
     RotateCcw,
     ShieldCheck,
-    Sparkles,
+    Scale,
     Square,
     TriangleAlert
 } from 'lucide-react'
@@ -21,7 +21,7 @@ import {useChat} from '../lib/chat'
 import {copyText} from '../lib/clipboard'
 import {useAppConfig} from '../lib/config'
 import {useErrorText} from '../lib/errors'
-import {useSettings, useT} from '../lib/settings'
+import {useT} from '../lib/settings'
 import type {TKey} from '../lib/i18n'
 import type {ChatMessage, Source} from '../lib/types'
 import {Markdown, citedIndexes} from '../components/Markdown'
@@ -29,32 +29,11 @@ import {ScopePicker} from '../components/ScopePicker'
 import {SourceDrawer} from '../components/SourceDrawer'
 import {ErrorNote} from '../components/ErrorNote'
 
-/** Suggestion cards; class names are written out in full so Tailwind can find them. */
-const SUGGESTIONS: { key: TKey; icon: typeof FileText; tile: string; hover: string }[] = [
-  {
-    key: 'chat.suggest1',
-    icon: FileText,
-    tile: 'bg-sky-500/15 text-sky-300',
-    hover: 'hover:border-sky-400/50 hover:shadow-[0_0_32px_-10px_rgb(56_189_248/0.8)]',
-  },
-  {
-    key: 'chat.suggest2',
-    icon: LockKeyhole,
-    tile: 'bg-violet-500/15 text-violet-300',
-    hover: 'hover:border-violet-400/50 hover:shadow-[0_0_32px_-10px_rgb(168_85_247/0.8)]',
-  },
-  {
-    key: 'chat.suggest3',
-    icon: ShieldCheck,
-    tile: 'bg-emerald-500/15 text-emerald-300',
-    hover: 'hover:border-emerald-400/50 hover:shadow-[0_0_32px_-10px_rgb(52_211_153/0.8)]',
-  },
-  {
-    key: 'chat.suggest4',
-    icon: TriangleAlert,
-    tile: 'bg-amber-500/15 text-amber-300',
-    hover: 'hover:border-amber-400/50 hover:shadow-[0_0_32px_-10px_rgb(251_191_36/0.8)]',
-  },
+const SUGGESTIONS: { key: TKey; icon: typeof FileText }[] = [
+  { key: 'chat.suggest1', icon: FileText },
+  { key: 'chat.suggest2', icon: LockKeyhole },
+  { key: 'chat.suggest3', icon: ShieldCheck },
+  { key: 'chat.suggest4', icon: TriangleAlert },
 ]
 
 export function ChatPage() {
@@ -133,8 +112,8 @@ export function ChatPage() {
   }
 
   return (
-    <div ref={page} className="flex min-h-full flex-col">
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4">
+    <div ref={page} className="flex min-h-[calc(100%-4.25rem)] flex-col">
+      <div className="chat-content mx-auto flex w-full flex-1 flex-col">
         {/* messages */}
         <div className="flex-1 space-y-6 py-6">
           <ErrorNote error={loadError} />
@@ -160,11 +139,10 @@ export function ChatPage() {
           )}
         </div>
 
-        {/* composer: pill with a cyan→violet gradient border */}
-        <div className="sticky bottom-0 pb-4 pt-6">
-          <div className="rounded-[30px] bg-gradient-to-r from-neon via-sky-500 to-violet p-[1.5px] shadow-[0_0_40px_-12px_rgb(56_189_248/0.6)] transition-shadow focus-within:shadow-[0_0_50px_-8px_rgb(168_85_247/0.7)]">
-            <div className="flex items-end gap-2 rounded-[28.5px] bg-[#070b16] py-2 pl-2.5 pr-2 sm:gap-3">
-              <ScopePicker scope={scope} onChange={setScope} />
+        {/* The search scope and send control sit below the writing area. */}
+        <div className="chat-composer">
+          <div className="composer-box">
+            <div>
               <textarea
                 ref={textarea}
                 rows={1}
@@ -173,11 +151,14 @@ export function ChatPage() {
                 onKeyDown={onKey}
                 placeholder={t('chat.placeholder')}
                 maxLength={config?.maxQuestionLength}
-                className="max-h-[200px] flex-1 resize-none bg-transparent py-3 text-[15px] outline-none placeholder:text-muted/80"
+                aria-label={t('chat.placeholder')}
+                className="chat-textarea"
               />
+              <div className="flex items-end justify-between gap-3 px-3 pb-3">
+              <ScopePicker scope={scope} onChange={setScope} />
               {/* while an answer is being written, the send button stops it */}
               <button
-                className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-violet-500 text-white shadow-[0_0_22px_-4px_rgb(56_189_248/0.8)] transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
+                className="composer-send shrink-0"
                 disabled={!busy && !input.trim()}
                 onClick={() => (busy ? stop() : send())}
                 aria-label={busy ? t('chat.stop') : t('chat.send')}
@@ -189,10 +170,11 @@ export function ChatPage() {
                   <ChevronRight className="h-6 w-6" strokeWidth={2.5} />
                 )}
               </button>
+              </div>
             </div>
           </div>
           <p className="mt-3 flex items-center justify-center gap-2 text-center text-xs text-muted">
-            <ShieldCheck className="h-4 w-4 shrink-0 text-violet-400" />
+            <ShieldCheck className="h-4 w-4 shrink-0 text-muted" />
             {t('chat.disclaimer')}
           </p>
         </div>
@@ -203,58 +185,30 @@ export function ChatPage() {
   )
 }
 
-/** Small dots floating around the hero icon. */
-const DOTS = [
-  { x: -175, y: 12, size: 6, color: 'bg-neon' },
-  { x: -130, y: -18, size: 4, color: 'bg-sky-500' },
-  { x: 125, y: -18, size: 5, color: 'bg-violet' },
-  { x: 95, y: 8, size: 4, color: 'bg-indigo-400' },
-  { x: 160, y: 22, size: 5, color: 'bg-violet-500' },
-]
-
 function EmptyState({ onPick }: { onPick: (q: string) => void }) {
-  const { t, animations } = useSettings()
+  const t = useT()
   return (
-    <motion.div className="pt-6 text-center sm:pt-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div className="relative mx-auto mb-8 h-24 w-24">
-        {DOTS.map((d, i) => (
-          <motion.span
-            key={i}
-            className={`absolute left-1/2 top-1/2 rounded-full ${d.color}`}
-            style={{ width: d.size, height: d.size, marginLeft: d.x, marginTop: d.y }}
-            animate={animations ? { y: [0, -7, 0], opacity: [0.45, 1, 0.45] } : undefined}
-            transition={{ duration: 3 + i * 0.6, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        ))}
-        <div className="rounded-3xl bg-gradient-to-br from-neon to-violet p-[1.5px] shadow-[0_0_60px_-8px_rgb(56_189_248/0.7)]">
-          <div className="grid h-[93px] w-[93px] place-items-center rounded-[22.5px] bg-panel">
-            <Sparkles color="url(#cl-gradient)" className="h-12 w-12" strokeWidth={1.6} />
-          </div>
-        </div>
+    <motion.div className="chat-empty" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="label-mono mb-6 flex items-center gap-2 text-neon">
+        <BookOpen className="h-4 w-4" strokeWidth={1.5} />
+        {t('workspace.research')}
       </div>
-
-      <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
-        <span className="neon-text">{t('chat.emptyTitle')}</span>
-      </h1>
-      <p className="mx-auto mt-4 max-w-xl text-lg text-slate-300">{t('chat.emptySubtitle')}</p>
-
-      <div className="mt-12 grid gap-4 text-left md:grid-cols-2">
-        {SUGGESTIONS.map(({ key, icon: Icon, tile, hover }, i) => (
+      <h1>{t('chat.emptyTitle')}</h1>
+      <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-muted">{t('chat.emptySubtitle')}</p>
+      <div className="label-mono mt-12">{t('workspace.start')}</div>
+      <div className="chat-suggestions">
+        {SUGGESTIONS.map(({ key, icon: Icon }, i) => (
           <motion.button
             key={key}
             onClick={() => onPick(t(key))}
-            className={`group glass flex items-center gap-4 rounded-2xl p-4 transition-all ${hover}`}
-            initial={{ opacity: 0, y: 12 }}
+            className="chat-suggestion group"
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 + i * 0.08 }}
+            transition={{ delay: 0.05 + i * 0.04 }}
           >
-            <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-xl ${tile}`}>
-              <Icon className="h-8 w-8" strokeWidth={1.75} />
-            </span>
-            <span className="min-w-0 flex-1 text-[15px] leading-snug text-slate-100">{t(key)}</span>
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:border-white/30 group-hover:text-white">
-              <ArrowRight className="h-4 w-4" />
-            </span>
+            <Icon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-neon" strokeWidth={1.5} />
+            <span className="flex-1 text-[13px] leading-relaxed">{t(key)}</span>
+            <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5" />
           </motion.button>
         ))}
       </div>
@@ -265,7 +219,7 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
 function UserBubble({ text }: { text: string }) {
   return (
     <motion.div className="flex justify-end" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md border border-violet/40 bg-violet/15 px-4 py-3 text-[15px] shadow-[0_0_24px_-12px_var(--color-violet)]">
+      <div className="max-w-[85%] whitespace-pre-wrap rounded-lg rounded-br-sm border border-neon/15 bg-neon/5 px-4 py-3 text-[15px]">
         {text}
       </div>
     </motion.div>
@@ -298,7 +252,7 @@ function AssistantMessage({
   return (
     <motion.div className="flex gap-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <div className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-neon/40 bg-neon/10">
-        <Sparkles className="h-4 w-4 text-neon" />
+        <Scale className="h-4 w-4 text-neon" />
       </div>
       <div className="min-w-0 flex-1">
         <AnimatePresence>
@@ -307,7 +261,7 @@ function AssistantMessage({
               className="scan-bar glass inline-flex items-center gap-3 px-4 py-3 font-mono text-sm text-neon"
               exit={{ opacity: 0, height: 0 }}
             >
-              <Sparkles className="h-4 w-4 animate-pulse" />
+              <Scale className="h-4 w-4 animate-pulse" />
               {t('chat.thinking')}
               <span className="typing-cursor" />
             </motion.div>
@@ -325,14 +279,14 @@ function AssistantMessage({
 
         {message.status === 'error' && message.errorCode === 'BLOCKED' && (
           // the safety filter stopped the answer: a calm notice without Retry, asking again would be blocked again
-          <div className="mt-2 flex items-center gap-3 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
-            <ShieldCheck className="h-4 w-4 shrink-0 text-amber-300" />
+          <div className="mt-2 flex items-center gap-3 rounded-xl border border-amber/30 bg-amber/5 px-4 py-3 text-sm text-amber">
+            <ShieldCheck className="h-4 w-4 shrink-0 text-amber" />
             <span className="flex-1">{errorText({ code: message.errorCode, message: message.errorMessage })}</span>
           </div>
         )}
 
         {message.status === 'error' && message.errorCode !== 'BLOCKED' && (
-          <div className="mt-2 flex flex-wrap items-center gap-3 rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-red-200">
+          <div className="mt-2 flex flex-wrap items-center gap-3 rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
             <TriangleAlert className="h-4 w-4 shrink-0" />
             <span className="flex-1">
               {countdown?.id === message.id
@@ -412,7 +366,7 @@ function AnswerActions({
   }
 
   const action =
-    'inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted transition-colors hover:bg-white/5 hover:text-white disabled:opacity-40 disabled:hover:bg-transparent'
+    'inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted transition-colors hover:bg-neon/5 hover:text-ink disabled:opacity-40 disabled:hover:bg-transparent'
   return (
     <div className="mt-3 flex items-center gap-1">
       {text && (

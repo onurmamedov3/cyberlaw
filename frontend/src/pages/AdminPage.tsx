@@ -41,7 +41,7 @@ export function AdminPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="workspace-page">
       <PageHeader icon={<Landmark className="h-6 w-6" />} title={t('admin.title')} subtitle={t('admin.subtitle')} />
 
       <ChatLimitCard />
@@ -196,7 +196,7 @@ function ChecklistControls({ doc, onGenerate }: { doc: LibraryDocument; onGenera
                   <span className="font-semibold">{r.title}</span>
                   {r.article && <span className="chip text-violet">{r.article}</span>}
                 </div>
-                <p className="mt-1 text-slate-400">{r.description}</p>
+                <p className="mt-1 text-muted">{r.description}</p>
               </li>
             ))}
           </motion.ol>

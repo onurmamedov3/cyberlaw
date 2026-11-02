@@ -28,7 +28,7 @@ export function SettingsPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="workspace-page workspace-page-narrow">
       <PageHeader icon={<Settings className="h-6 w-6" />} title={t('settings.title')} />
 
       <div className="space-y-4">
@@ -40,7 +40,7 @@ export function SettingsPage() {
                 onClick={() => setLang(l.code)}
                 className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-all ${
                   lang === l.code
-                    ? 'border-neon bg-neon/10 shadow-[0_0_24px_-8px_var(--color-neon)]'
+                    ? 'border-neon bg-neon/10'
                     : 'border-line hover:border-neon/40'
                 }`}
               >
@@ -59,7 +59,7 @@ export function SettingsPage() {
             aria-pressed={animations}
           >
             <motion.span
-              className={`absolute top-1 h-5.5 w-5.5 rounded-full ${animations ? 'bg-neon shadow-[0_0_12px_var(--color-neon)]' : 'bg-muted'}`}
+              className={`absolute top-1 h-5.5 w-5.5 rounded-full ${animations ? 'bg-neon' : 'bg-muted'}`}
               animate={{ left: animations ? 36 : 4 }}
               transition={{ type: 'spring', stiffness: 400, damping: 28 }}
             />

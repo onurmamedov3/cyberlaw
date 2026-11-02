@@ -59,7 +59,7 @@ export function SourceDrawer({ source, onClose }: { source: Source | null; onClo
                 // a saved chat keeps no text of a deleted private document
                 <p className="rounded-lg border border-line bg-void/40 p-4 text-sm italic text-muted">{t('source.deleted')}</p>
               ) : (
-                <p className="whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-slate-300">{source.text}</p>
+                <p className="source-passage whitespace-pre-wrap">{source.text}</p>
               )}
             </div>
 
@@ -70,7 +70,7 @@ export function SourceDrawer({ source, onClose }: { source: Source | null; onClo
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-line">
                 <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-neon to-violet"
+                  className="h-full rounded-full bg-neon"
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.round(source.score * 100)}%` }}
                   transition={{ duration: 0.8 }}

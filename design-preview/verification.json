@@ -1,0 +1,19 @@
+{
+  "mode": "Browser checks with isolated fixture API responses; no production data",
+  "checks": [
+    "Registration fields remain available",
+    "Login passes existing credentials to the API",
+    "All three search scopes remain available",
+    "Chat submission and streaming rendering preserved",
+    "Compliance run navigates to its existing report route",
+    "Report verdict filters remain functional",
+    "Mobile chat: no horizontal overflow",
+    "Mobile documents: no horizontal overflow",
+    "Mobile compliance: no horizontal overflow",
+    "Mobile settings: no horizontal overflow",
+    "Azerbaijani mobile chat: no horizontal overflow",
+    "Mobile sign-in: no horizontal overflow",
+    "No browser errors or missing fixtures ()"
+  ],
+  "errors": []
+}

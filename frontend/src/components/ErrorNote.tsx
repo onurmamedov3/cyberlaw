@@ -5,7 +5,7 @@ export function ErrorNote({ error, className = '' }: { error: unknown; className
   const errorText = useErrorText()
   if (!error) return null
   return (
-    <div role="alert" className={`rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-red-200 ${className}`}>
+    <div role="alert" className={`rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger ${className}`}>
       {errorText(error)}
     </div>
   )
