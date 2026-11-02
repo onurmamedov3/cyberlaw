@@ -43,6 +43,10 @@ The AI model connection panel and its connection-status request are limited to a
 
 Role, layout and interaction checks: [settings-verification.json](settings-verification.json). History/account placement and the delete confirmation flow: [settings-alignment-verification.json](settings-alignment-verification.json).
 
+## Page headers
+
+Settings, My Documents, Compliance and Admin use the shared header with the icon immediately to the left of the title. Subtitles remain below the heading row, and longer titles can wrap on narrow screens.
+
 ## Validation
 
 - `npm.cmd run typecheck` passes.
