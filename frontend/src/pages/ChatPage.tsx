@@ -323,7 +323,15 @@ function AssistantMessage({
 
         {message.stopped && <p className="mt-2 text-xs italic text-muted">{t('chat.stopped')}</p>}
 
-        {message.status === 'error' && (
+        {message.status === 'error' && message.errorCode === 'BLOCKED' && (
+          // the safety filter stopped the answer: a calm notice without Retry, asking again would be blocked again
+          <div className="mt-2 flex items-center gap-3 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+            <ShieldCheck className="h-4 w-4 shrink-0 text-amber-300" />
+            <span className="flex-1">{errorText({ code: message.errorCode, message: message.errorMessage })}</span>
+          </div>
+        )}
+
+        {message.status === 'error' && message.errorCode !== 'BLOCKED' && (
           <div className="mt-2 flex flex-wrap items-center gap-3 rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-red-200">
             <TriangleAlert className="h-4 w-4 shrink-0" />
             <span className="flex-1">

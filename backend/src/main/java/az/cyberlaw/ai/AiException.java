@@ -27,6 +27,8 @@ public class AiException extends RuntimeException {
 			case RATE_LIMIT -> "Gemini free-tier rate limit reached. Please wait a minute and try again.";
 			case INVALID_KEY -> "The Gemini API key was rejected. Check GEMINI_API_KEY in the .env file.";
 			case NOT_CONFIGURED -> "No Gemini API key configured. Put your key into GEMINI_API_KEY in the .env file.";
+			case BLOCKED -> "This request was stopped by the content safety filter. Please ask a question about cyber "
+					+ "law, data protection or compliance.";
 			case AI_ERROR -> "The AI service returned an error. Please try again.";
 		};
 	}

@@ -229,6 +229,7 @@ const en = {
   // shown instead of the line above when the admin is logged in (see errors.ts)
   'error.INVALID_KEY.admin': 'The Gemini API key was rejected. Check GEMINI_API_KEY in the .env file.',
   'error.NOT_CONFIGURED.admin': 'No Gemini API key configured. Put your key into GEMINI_API_KEY in the .env file.',
+  'error.BLOCKED': "CyberLaw can't answer this, because the content safety filter stopped it. Please ask a question about cyber law, data protection or compliance.",
   'error.AI_ERROR': 'The AI service returned an error. Please try again.',
 }
 
@@ -450,6 +451,7 @@ const az: Record<TKey, string> = {
   'error.NOT_CONFIGURED': 'AI xidməti hazırda əlçatan deyil. Zəhmət olmasa administratorla əlaqə saxlayın.',
   'error.INVALID_KEY.admin': 'Gemini API açarı qəbul edilmədi. .env faylında GEMINI_API_KEY dəyərini yoxlayın.',
   'error.NOT_CONFIGURED.admin': 'Gemini API açarı təyin edilməyib. Açarınızı .env faylında GEMINI_API_KEY-ə yazın.',
+  'error.BLOCKED': 'Məzmun təhlükəsizliyi filtri bu sorğunu dayandırdığı üçün CyberLaw cavab verə bilmir. Zəhmət olmasa kibertəhlükəsizlik hüququ, məlumatların qorunması və ya uyğunluq barədə sual verin.',
   'error.AI_ERROR': 'AI xidməti xəta qaytardı. Yenidən cəhd edin.',
 }
 

@@ -2,8 +2,11 @@ package az.cyberlaw.chat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import az.cyberlaw.ai.AiErrorCode;
 import az.cyberlaw.ai.AiException;
@@ -43,6 +46,10 @@ public class ChatService {
 	public static final int MAX_QUESTION = 2000;
 
 	private static final int FOLLOW_UP_MAX_WORDS = 6;
+
+	/** Gemini finish reasons that mean the answer was blocked by a content filter. */
+	private static final List<String> SAFETY_FINISH_REASONS = List.of("SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST",
+			"SPII");
 
 	private final ChatModel chatModel;
 
@@ -102,9 +109,7 @@ public class ChatService {
 						: Prompts.chatSystem(sources, request.language())));
 				messages.addAll(withoutCitations(past));
 				messages.add(new UserMessage(question));
-				answerParts = chatModel.stream(new Prompt(messages))
-					.map(ChatService::textOf)
-					.filter(text -> !text.isEmpty());
+				answerParts = guardSafetyBlocks(chatModel.stream(new Prompt(messages)));
 			}
 
 			StringBuilder answer = new StringBuilder();
@@ -143,6 +148,38 @@ public class ChatService {
 			.map(m -> m instanceof AssistantMessage answer ? new AssistantMessage(Citations.strip(answer.getText()))
 					: m)
 			.toList();
+	}
+
+	/**
+	 * The answer text, failing with BLOCKED when Google's safety filter stopped it. Spring AI 2.0.1 does not report
+	 * a block clearly: the last chunk has a SAFETY-like finish reason, or a chunk has no content at all and Spring AI
+	 * fails with NoSuchElementException, or the answer simply comes back empty.
+	 */
+	static Flux<String> guardSafetyBlocks(Flux<ChatResponse> responses) {
+		AtomicBoolean blocked = new AtomicBoolean();
+		AtomicBoolean anyText = new AtomicBoolean();
+		return responses.doOnNext(response -> {
+			if (blockedBySafety(response)) {
+				blocked.set(true);
+			}
+		})
+			.map(ChatService::textOf)
+			.filter(text -> !text.isEmpty())
+			.doOnNext(text -> anyText.set(true))
+			.onErrorMap(NoSuchElementException.class, ChatService::blockedError)
+			.concatWith(Mono.defer(() -> blocked.get() || !anyText.get() ? Mono.error(blockedError(null)) : Mono.empty()));
+	}
+
+	private static boolean blockedBySafety(ChatResponse response) {
+		if (response == null || response.getResult() == null || response.getResult().getMetadata() == null) {
+			return false;
+		}
+		String reason = String.valueOf(response.getResult().getMetadata().getFinishReason()).toUpperCase(Locale.ROOT);
+		return SAFETY_FINISH_REASONS.stream().anyMatch(reason::contains);
+	}
+
+	private static AiException blockedError(Throwable cause) {
+		return new AiException(AiErrorCode.BLOCKED, AiException.describe(AiErrorCode.BLOCKED), cause);
 	}
 
 	private static String textOf(ChatResponse response) {

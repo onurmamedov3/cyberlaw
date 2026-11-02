@@ -12,7 +12,8 @@ import org.springframework.dao.DataAccessException;
 
 public enum AiErrorCode {
 
-	RATE_LIMIT, INVALID_KEY, NOT_CONFIGURED, AI_ERROR;
+	/** BLOCKED: Google's safety filter stopped the answer (see the safety-settings in application.yml). */
+	RATE_LIMIT, INVALID_KEY, NOT_CONFIGURED, BLOCKED, AI_ERROR;
 
 	/** Inspects the whole cause chain of an exception thrown while calling Gemini. */
 	public static AiErrorCode classify(Throwable error) {
