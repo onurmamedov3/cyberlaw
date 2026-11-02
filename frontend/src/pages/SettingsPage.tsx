@@ -88,10 +88,10 @@ export function SettingsPage() {
 
         <ChatHistorySection />
 
-        <Section icon={<CircleUser className="h-5 w-5" />} title={t('settings.account')}>
-          <div className="text-sm">
+        <Section inline icon={<CircleUser className="h-5 w-5" />} title={t('settings.account')}>
+          <div className="max-w-full text-sm lg:max-w-xs lg:text-right">
             <div className="font-semibold">{user?.displayName}</div>
-            <div className="text-muted">{user?.email}</div>
+            <div className="break-all text-muted">{user?.email}</div>
             <span className="chip mt-2 text-violet">{user?.role}</span>
           </div>
         </Section>
@@ -129,16 +129,18 @@ function ChatHistorySection() {
       : t('settings.historyKept')
 
   return (
-    <Section icon={<History className="h-5 w-5" />} title={t('settings.history')} hint={hint}>
-      <button
-        className="btn btn-danger"
-        onClick={clear}
-        disabled={state === 'busy' || conversations?.length === 0}
-      >
-        <Trash className="h-4 w-4" /> {t('settings.clearHistory')}
-      </button>
-      {state === 'done' && <span className="ml-3 text-sm text-acid">{t('settings.cleared')}</span>}
-      <ErrorNote error={error} className="mt-3 w-full" />
+    <Section inline icon={<History className="h-5 w-5" />} title={t('settings.history')} hint={hint}>
+      <div className="flex max-w-xs flex-col items-start gap-2 lg:items-end">
+        <button
+          className="btn btn-danger"
+          onClick={clear}
+          disabled={state === 'busy' || conversations?.length === 0}
+        >
+          <Trash className="h-4 w-4" /> {t('settings.clearHistory')}
+        </button>
+        {state === 'done' && <span className="text-sm text-acid">{t('settings.cleared')}</span>}
+        <ErrorNote error={error} className="w-full" />
+      </div>
     </Section>
   )
 }
