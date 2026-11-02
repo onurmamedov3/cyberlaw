@@ -2,7 +2,7 @@ import {lazy, Suspense, useSyncExternalStore} from 'react'
 import {useSettings} from '../lib/settings'
 
 const LetterGlitch = lazy(() => import('./letter-glitch/LetterGlitch'))
-const BLUE_COLORS = ['#0096c7', '#00b4d8', '#48cae4', '#90e0ef']
+const BLUE_COLORS = ['#00b4d8', '#48cae4', '#90e0ef', '#ade8f4']
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
 function subscribeToReducedMotion(onChange: () => void) {
@@ -30,17 +30,17 @@ export function CyberBackground({ variant = 'sidebar' }: { variant?: 'sign-in' |
           glitchColors={BLUE_COLORS}
           baseColor="#90e0ef"
           backgroundColor="#03045e"
-          fontSize={signIn ? 14 : 12}
-          spacing={0.8}
-          density={signIn ? 0.8 : 0.65}
-          baseOpacity={signIn ? 0.13 : 0.08}
-          glitchAmount={signIn ? 0.3 : 0.18}
-          speed={signIn ? 0.7 : 0.45}
-          cursorRadius={signIn ? 120 : 70}
+          fontSize={signIn ? 16 : 14}
+          spacing={0.6}
+          density={signIn ? 0.95 : 0.85}
+          baseOpacity={signIn ? 0.34 : 0.25}
+          glitchAmount={signIn ? 0.55 : 0.4}
+          speed={signIn ? 1 : 0.8}
+          cursorRadius={signIn ? 160 : 100}
           clickEffect="tear"
-          centerFade={signIn ? 0.65 : 0.35}
-          edgeFade={0.08}
-          flow={0.3}
+          centerFade={signIn ? 0.3 : 0.12}
+          edgeFade={0.04}
+          flow={0.4}
           dpr={1}
         />
       </Suspense>

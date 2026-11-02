@@ -49,7 +49,7 @@ Settings, My Documents, Compliance and Admin use the shared header with the icon
 
 ## Letter Glitch
 
-The selected [React Bits Letter Glitch](https://reactbits.dev/backgrounds/letter-glitch) component is integrated into the navy sign-in panel, desktop sidebar and mobile navigation drawer. Its blue/cyan palette, density and speed are adapted to the existing design. Reading surfaces remain solid.
+The selected [React Bits Letter Glitch](https://reactbits.dev/backgrounds/letter-glitch) component is integrated into the navy sign-in panel, desktop sidebar and mobile navigation drawer. Its blue/cyan palette, density and speed are adapted to the existing design. The letter pattern uses larger glyphs, brighter cyan tones and stronger opacity, with more frequent colour changes so it is clearly visible. Reading surfaces remain solid.
 
 - [Animated preview and interface screenshots](letter-glitch-preview.html).
 - [Animation lifecycle and fallback checks](letter-glitch-verification.json).
