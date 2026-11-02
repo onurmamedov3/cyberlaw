@@ -71,12 +71,12 @@ export function SettingsPage() {
           <span className="text-sm text-muted">{animations ? t('settings.on') : t('settings.off')}</span>
         </Section>
 
-        {isAdmin && <Section icon={<BrainCircuit className="h-5 w-5" />} title={t('settings.aiStatus')}>
+        {isAdmin && <Section inline icon={<BrainCircuit className="h-5 w-5" />} title={t('settings.aiStatus')}>
           {aiConfigured === null ? (
             <span className="text-sm text-muted">{t('common.loading')}</span>
           ) : aiConfigured ? (
-            <span className="chip text-acid">
-              <CircleCheck className="h-3 w-3" /> {t('settings.aiOk')}
+            <span className="chip gap-2 px-3 py-1.5 text-sm text-acid">
+              <CircleCheck className="h-4 w-4" /> {t('settings.aiOk')}
             </span>
           ) : (
             <span className="chip text-amber">

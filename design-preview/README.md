@@ -39,7 +39,7 @@ Focused browser checks: [composer-verification.json](composer-verification.json)
 
 Language choices, the animation toggle, Delete all chats and account details align to the right of their descriptions on larger screens. Account details are right-aligned on desktop. On phones the controls and details stack below their descriptions and align left, with the two language buttons arranged vertically.
 
-The AI model connection panel and its connection-status request are limited to admin accounts. Log out is a bordered button with its icon and label centered in both the desktop sidebar and mobile drawer.
+The AI model connection panel and its connection-status request are limited to admin accounts. Its larger Connected badge aligns to the right on larger screens, following the other settings rows. Log out is a bordered button with its icon and label centered in both the desktop sidebar and mobile drawer.
 
 Role, layout and interaction checks: [settings-verification.json](settings-verification.json). History/account placement and the delete confirmation flow: [settings-alignment-verification.json](settings-alignment-verification.json).
 
