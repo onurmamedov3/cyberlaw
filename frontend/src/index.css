@@ -95,6 +95,8 @@ button:not(:disabled) { cursor: pointer; }
   .page-heading { font-family: var(--font-display); font-size: 2.375rem; font-weight: 500; line-height: 1.15; letter-spacing: -0.035em; }
   .workspace-sidebar,
   .auth-story {
+    position: relative;
+    isolation: isolate;
     --color-ink: #caf0f8;
     --color-muted: #90e0ef;
     --color-neon: #48cae4;
@@ -104,6 +106,9 @@ button:not(:disabled) { cursor: pointer; }
     color: var(--color-ink);
   }
   .workspace-sidebar { background: var(--color-navy); border-right: 1px solid var(--color-royal); }
+  .letter-glitch-background { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: inherit; pointer-events: none; }
+  .letter-glitch-background-sign-in { opacity: 0.6; }
+  .letter-glitch-background-sidebar { opacity: 0.45; }
   .workspace-sidebar .brand-mark,
   .auth-story .brand-mark { background: #023e8a; color: #caf0f8; }
   .workspace-sidebar .btn-neon { background: #48cae4; color: #03045e; }
@@ -190,5 +195,6 @@ button:not(:disabled) { cursor: pointer; }
   body { background: #fff; }
   .workspace-page { max-width: none; padding: 0; }
   .glass { box-shadow: none; }
+  .letter-glitch-background { display: none; }
   .scan-bar::after { display: none; }
 }

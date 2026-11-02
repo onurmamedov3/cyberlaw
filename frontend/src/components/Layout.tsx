@@ -9,6 +9,7 @@ import {ChatHistoryList} from './ChatHistoryList'
 import {ErrorBoundary} from './ErrorBoundary'
 import {Logo} from './Logo'
 import {LanguageSwitch} from './LanguageSwitch'
+import {CyberBackground} from './CyberBackground'
 
 const links: { to: string; label: TKey; icon: typeof MessageSquare; admin?: boolean }[] = [
   { to: '/chat', label: 'nav.chat', icon: MessageSquare },
@@ -78,6 +79,7 @@ export function Layout() {
     <div className="flex h-full print:block print:h-auto">
       {/* desktop sidebar */}
       <aside className="workspace-sidebar hidden w-64 shrink-0 flex-col px-5 py-7 md:flex print:hidden">
+        <CyberBackground />
         <div className="mb-9 px-1">
           <Logo />
           <p className="mt-2 text-[11px] text-muted">{t('workspace.research')}</p>
@@ -108,6 +110,7 @@ export function Layout() {
       {open && (
         <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={() => setOpen(false)}>
           <aside className="workspace-sidebar absolute inset-y-0 left-0 flex w-[min(20rem,calc(100vw-2rem))] flex-col p-5" onClick={(e) => e.stopPropagation()}>
+            <CyberBackground />
             <div className="mb-6 flex items-center justify-between">
               <Logo />
               <button onClick={() => setOpen(false)} aria-label={t('common.close')}>

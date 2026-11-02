@@ -1,0 +1,25 @@
+{
+  "mode": "Real WebGL rendering with isolated sample API responses; OS preference and missing-WebGL emulated",
+  "checks": [
+    "The actual Letter Glitch renderer works with React StrictMode",
+    "The decorative canvas is hidden from assistive technology and does not intercept input",
+    "Saved a recording of Letter Glitch in the actual interface",
+    "Sign-in works with the animated background enabled",
+    "Turning Animations off stops all Letter Glitch draws",
+    "Turning Animations off releases the WebGL context",
+    "The existing animation preference is saved",
+    "Animations remain off after a page reload",
+    "Turning Animations back on restarts the effect",
+    "A live reduced-motion change stops the canvas",
+    "Reduced motion prevents canvas creation on page load even with Animations on",
+    "Mobile navigation with Letter Glitch: no horizontal overflow",
+    "The mobile drawer still navigates and closes over the background",
+    "Letter Glitch is omitted from print output",
+    "Unmounted canvases do not continue drawing",
+    "The app keeps working when WebGL is unavailable",
+    "The unavailable-WebGL fallback does not create an animation loop",
+    "Chat submission and rendering remain functional with the plain-background fallback",
+    "No browser errors or missing fixtures ()"
+  ],
+  "errors": []
+}

@@ -6,6 +6,7 @@ import {useT} from '../lib/settings'
 import {ErrorNote} from '../components/ErrorNote'
 import {Logo} from '../components/Logo'
 import {LanguageSwitch} from '../components/LanguageSwitch'
+import {CyberBackground} from '../components/CyberBackground'
 
 export function LoginPage() {
   const t = useT()
@@ -40,6 +41,7 @@ export function LoginPage() {
   return (
     <div className="auth-shell">
       <section className="auth-story">
+          <CyberBackground variant="sign-in" />
           <Logo size="lg" />
           <div className="my-10 max-w-xl">
             <p className="label-mono mb-6 text-neon">{t('workspace.research')}</p>

@@ -47,11 +47,23 @@ Role, layout and interaction checks: [settings-verification.json](settings-verif
 
 Settings, My Documents, Compliance and Admin use the shared header with the icon immediately to the left of the title. Subtitles remain below the heading row, and longer titles can wrap on narrow screens.
 
+## Letter Glitch
+
+The selected [React Bits Letter Glitch](https://reactbits.dev/backgrounds/letter-glitch) component is integrated into the navy sign-in panel, desktop sidebar and mobile navigation drawer. Its blue/cyan palette, density and speed are adapted to the existing design. Reading surfaces remain solid.
+
+- [Animated preview and interface screenshots](letter-glitch-preview.html).
+- [Animation lifecycle and fallback checks](letter-glitch-verification.json).
+- Animations off unmounts the canvas and releases its graphics resources. Device reduced-motion preferences are honoured, including changes while the app is open.
+- The effect is decorative, does not capture input and is excluded from printing. When WebGL2 is unavailable the existing navy background remains.
+- The component loads in a separate bundle and adds no package dependencies. Its source and licence are retained under `frontend/src/components/letter-glitch`; the licence is also shipped in `frontend/public/licenses/react-bits.md`.
+
+The static gallery screenshots show animations off unless labelled Letter Glitch. The animated preview records the actual component with pointer interaction.
+
 ## Validation
 
 - `npm.cmd run typecheck` passes.
 - `npm.cmd run build` passes, with Vite's bundle-size advisory for the existing main JavaScript chunk.
 - [Browser results](verification.json): registration fields, login payload, search scope options, streamed answers, citations, compliance navigation, report filters, mobile navigation and phone-width overflow checks.
-- Twenty-five screenshots cover desktop and mobile, including English and Azerbaijani.
+- Twenty-eight screenshots cover desktop and mobile, including English and Azerbaijani.
 
 Screenshots render the actual React interface using isolated sample API responses. No real account, documents, or backend records were changed. External fonts were disabled during capture, so the configured system fallbacks appear. Live backend and AI calls were not retested.
