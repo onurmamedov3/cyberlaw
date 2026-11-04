@@ -64,20 +64,20 @@ export function UploadZone({
           setDragging(false)
           if (!fullText) send(e.dataTransfer.files)
         }}
-        className={`group relative flex w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed px-6 py-10 transition-all ${
+        className={`upload-zone group relative flex w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-lg border border-dashed px-6 py-10 transition-all ${
           fullText
             ? 'cursor-not-allowed border-line bg-panel/20 opacity-70'
             : dragging
-              ? 'border-neon bg-neon/10 shadow-[0_0_40px_-10px_var(--color-neon)]'
+              ? 'border-neon bg-neon/10'
               : 'border-line bg-panel/40 hover:border-neon/60 hover:bg-neon/5'
         }`}
       >
         {fullText ? (
-          <Ban className="h-10 w-10 text-amber" />
+          <Ban className="h-7 w-7 text-amber" />
         ) : busy ? (
-          <LoaderCircle className="h-10 w-10 animate-spin text-neon" />
+          <LoaderCircle className="h-7 w-7 animate-spin text-neon" />
         ) : (
-          <FileUp className="h-10 w-10 text-neon transition-transform group-hover:-translate-y-1" />
+          <FileUp className="h-7 w-7 text-neon transition-transform group-hover:-translate-y-1" />
         )}
         <div className="font-semibold">{fullText ?? (busy ? t('docs.uploading') : t('docs.drop'))}</div>
         {config && !fullText && <div className="text-xs text-muted">{t('docs.formats', { mb: config.maxFileSizeMb })}</div>}

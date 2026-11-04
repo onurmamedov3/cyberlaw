@@ -31,14 +31,15 @@ export function ScopePicker({ scope, onChange }: { scope: SearchScope; onChange:
   }, [open])
 
   return (
-    <div ref={root} className="relative mb-1.5 shrink-0">
+    <div ref={root} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen(!open)}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-label={`${t('chat.scope')}: ${t(`chat.scope.${scope}`)}`}
         title={`${t('chat.scope')}: ${t(`chat.scope.${scope}`)}`}
-        className="flex h-10 items-center gap-1.5 rounded-full border border-line bg-panel/60 px-3 text-sm font-semibold text-slate-200 transition-colors hover:border-neon/50 hover:text-white"
+        className="flex h-9 items-center gap-2 rounded-md border border-line bg-void/70 px-2.5 text-xs font-medium text-ink transition-colors hover:border-neon/50 hover:text-ink"
       >
         <Current className="h-4.5 w-4.5 text-neon" strokeWidth={1.9} />
         <span className="hidden sm:inline">{t(`chat.scope.${scope}`)}</span>
@@ -49,7 +50,7 @@ export function ScopePicker({ scope, onChange }: { scope: SearchScope; onChange:
         {open && (
           <motion.div
             role="menu"
-            className="glass absolute bottom-full left-0 z-30 mb-3 w-[min(20rem,calc(100vw-3rem))] p-1.5 shadow-[0_0_40px_-12px_rgb(34_211_238/0.6)]"
+            className="glass absolute bottom-full left-0 z-30 mb-3 w-[min(20rem,calc(100vw-3rem))] p-1.5"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
@@ -66,7 +67,7 @@ export function ScopePicker({ scope, onChange }: { scope: SearchScope; onChange:
                   setOpen(false)
                 }}
                 className={`flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors ${
-                  scope === s ? 'bg-neon/10' : 'hover:bg-white/5'
+                  scope === s ? 'bg-neon/10' : 'hover:bg-neon/5'
                 }`}
               >
                 <Icon className={`mt-0.5 h-4.5 w-4.5 shrink-0 ${scope === s ? 'text-neon' : 'text-muted'}`} />

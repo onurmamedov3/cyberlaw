@@ -28,7 +28,6 @@ export function ScoreRing({ score, size = 160, label }: { score: number; size?: 
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: circumference * (1 - score / 100) }}
           transition={{ duration: 1.2, ease: 'easeOut' }}
-          style={{ filter: `drop-shadow(0 0 8px ${color})` }}
         />
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">

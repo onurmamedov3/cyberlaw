@@ -21,7 +21,7 @@ export function DocumentCard({
   const errorText = useErrorText()
   const confirm = useConfirm()
   return (
-    <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="glass glass-hover p-4">
+    <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="glass glass-hover document-row">
       <div className="flex items-start gap-3">
         <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg border ${doc.status === 'PROCESSING' ? 'scan-bar border-amber/40 bg-amber/10' : 'border-neon/30 bg-neon/10'}`}>
           <FileText className={`h-5 w-5 ${doc.status === 'PROCESSING' ? 'text-amber' : 'text-neon'}`} />
@@ -46,7 +46,7 @@ export function DocumentCard({
             )}
           </div>
           {doc.status === 'FAILED' && (doc.errorCode || doc.errorMessage) && (
-            <div className="mt-2 text-xs text-red-300">{errorText({ code: doc.errorCode, message: doc.errorMessage })}</div>
+            <div className="mt-2 text-xs text-danger">{errorText({ code: doc.errorCode, message: doc.errorMessage })}</div>
           )}
         </div>
         {onDelete && (

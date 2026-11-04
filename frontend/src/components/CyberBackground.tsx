@@ -1,26 +1,49 @@
+import {lazy, Suspense, useSyncExternalStore} from 'react'
 import {useSettings} from '../lib/settings'
 
-/** Glowing orbs + perspective grid + subtle scanlines behind every page. */
-export function CyberBackground() {
+const LetterGlitch = lazy(() => import('./letter-glitch/LetterGlitch'))
+const BLUE_COLORS = ['#00b4d8', '#48cae4', '#90e0ef', '#ade8f4']
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
+
+function subscribeToReducedMotion(onChange: () => void) {
+  const query = window.matchMedia(REDUCED_MOTION_QUERY)
+  query.addEventListener('change', onChange)
+  return () => query.removeEventListener('change', onChange)
+}
+
+const getReducedMotion = () => window.matchMedia(REDUCED_MOTION_QUERY).matches
+const getServerReducedMotion = () => true
+
+/** Decorative motion stays inside the navy surfaces, behind the interface. */
+export function CyberBackground({ variant = 'sidebar' }: { variant?: 'sign-in' | 'sidebar' }) {
   const { animations } = useSettings()
+  const reducedMotion = useSyncExternalStore(subscribeToReducedMotion, getReducedMotion, getServerReducedMotion)
+
+  // Unmount the canvas so disabling motion also releases its animation loop and GPU resources.
+  if (!animations || reducedMotion) return null
+
+  const signIn = variant === 'sign-in'
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="cyber-glow" style={{ width: 520, height: 520, left: '-12%', top: '-18%', background: '#22d3ee' }} />
-      <div
-        className="cyber-glow"
-        style={{ width: 460, height: 460, right: '-10%', bottom: '-12%', background: '#a855f7', animationDelay: '-7s' }}
-      />
-      {animations && <div className="cyber-grid" />}
-      <div className="scanline" />
-      {/* shared cyan→violet gradient for icons: <Sparkles color="url(#cl-gradient)" /> */}
-      <svg width="0" height="0" className="absolute">
-        <defs>
-          <linearGradient id="cl-gradient" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#22d3ee" />
-            <stop offset="100%" stopColor="#a855f7" />
-          </linearGradient>
-        </defs>
-      </svg>
+    <div className={`letter-glitch-background letter-glitch-background-${variant}`} aria-hidden="true">
+      <Suspense fallback={null}>
+        <LetterGlitch
+          glitchColors={BLUE_COLORS}
+          baseColor="#90e0ef"
+          backgroundColor="#03045e"
+          fontSize={signIn ? 16 : 14}
+          spacing={0.6}
+          density={signIn ? 0.95 : 0.85}
+          baseOpacity={signIn ? 0.34 : 0.25}
+          glitchAmount={signIn ? 0.55 : 0.4}
+          speed={signIn ? 1 : 0.8}
+          cursorRadius={signIn ? 160 : 100}
+          clickEffect="tear"
+          centerFade={signIn ? 0.3 : 0.12}
+          edgeFade={0.04}
+          flow={0.4}
+          dpr={1}
+        />
+      </Suspense>
     </div>
   )
 }

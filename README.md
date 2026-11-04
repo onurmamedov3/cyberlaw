@@ -131,6 +131,38 @@ Errors always have the same JSON body: `{"code": "DOCUMENT_LIMIT", "message": "â
 The UI shows its own translation of the code (`error.CODE` in `frontend/src/lib/i18n.ts`); the codes are listed in
 `ErrorCode.java` and `AiErrorCode.java`.
 
+## Prompt-injection and misuse protection
+
+No defence against prompt injection is complete, so CyberLaw uses several layers that limit what a successful
+trick can do:
+
+- **Fenced documents** (`PromptFence.java`): every passage, together with its document title, is put between
+  `<untrusted-ID>` markers whose ID is random for every prompt. A document cannot close the fence early and add fake
+  rules: it cannot know the ID, and anything shaped like a marker is defused. Used by the chat, the compliance check
+  and checklist generation.
+- **Guardrails in the chat prompt** (`Prompts.java`): cyber law and compliance only, polite refusal of off-topic,
+  harmful and abusive requests, never reveal the instructions, ignore "ignore your rules" / role-play / "developer
+  mode" requests, answer only from the sources, no images or links.
+- **Safe rendering** (`Markdown.tsx`): answers never show raw HTML or images (an image URL would leak data as soon
+  as it loads), and links work only for http(s) sites, with the real domain shown next to the link text.
+- **Google's safety filter** (`safety-settings` in `application.yml`): harassment, hate speech and sexual content
+  are blocked from "medium", dangerous content only at "high" so that questions about attacks and cybercrime law
+  still work. A blocked answer ends with the error code `BLOCKED` and a calm notice in the chat instead of a
+  generic AI error.
+- **Boundaries:** private documents only reach their owner's answers; only the admin adds Official Library laws;
+  questions are length- and rate-limited.
+
+**Red-team test:** `RedTeamTest` sends 20 attacks and control questions (AZ/EN: prompt leaks, jailbreaks, off-topic,
+harmful requests, hidden instructions in an uploaded document, and legitimate questions that must still be answered)
+through the real chat prompt to Gemini, checks each reply automatically, and writes a table with all replies to
+`backend/target/redteam-report.md`. It needs about 40 API calls (about 5 minutes on the free tier), so it is off by
+default:
+
+```bash
+cd backend
+REDTEAM=true ./mvnw test -Dtest=RedTeamTest          # PowerShell: $env:REDTEAM="true"; ./mvnw test -Dtest=RedTeamTest
+```
+
 ## Notes
 
 - CyberLaw provides information, not legal advice.

@@ -1,0 +1,31 @@
+{
+  "mode": "Isolated sample API; deletion affects only in-memory fixtures",
+  "checks": [
+    "1440px desktop: history and account panels fit their contents",
+    "1440px desktop: Delete all chats is to the right of the heading",
+    "1440px desktop: account details sit on the right and align right",
+    "1024px desktop: history and account panels fit their contents",
+    "1024px desktop: Delete all chats is to the right of the heading",
+    "1024px desktop: account details sit on the right and align right",
+    "390px phone: history and account panels fit their contents",
+    "390px phone: history action stacks below its heading",
+    "390px phone: account details stack below their heading and align left",
+    "320px phone: history and account panels fit their contents",
+    "320px phone: history action stacks below its heading",
+    "320px phone: account details stack below their heading and align left",
+    "320px settings: no horizontal overflow",
+    "Regular-user desktop: history and account panels fit their contents",
+    "Regular-user desktop: Delete all chats is to the right of the heading",
+    "Regular-user desktop: account details sit on the right and align right",
+    "Regular-user phone: history and account panels fit their contents",
+    "Regular-user phone: history action stacks below its heading",
+    "Regular-user phone: account details stack below their heading and align left",
+    "Clicking Delete all chats opens confirmation without deleting",
+    "Cancel preserves the saved chat",
+    "Confirm uses the existing delete endpoint",
+    "The delete button disables after history is cleared",
+    "The success message still appears after confirmation",
+    "No browser errors ()"
+  ],
+  "errors": []
+}

@@ -27,7 +27,7 @@ export function ReportPage() {
     2500,
   )
 
-  if (error) return <div className="p-10 text-center text-red-300">{errorText(error)}</div>
+  if (error) return <div className="p-10 text-center text-danger">{errorText(error)}</div>
   if (!data) return <div className="p-10 text-center text-muted">{t('common.loading')}</div>
 
   const { report, results } = data
@@ -35,7 +35,7 @@ export function ReportPage() {
   const progress = report.total ? Math.round((report.processed / report.total) * 100) : 0
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="workspace-page">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <Link to="/compliance" className="inline-flex items-center gap-2 text-sm text-muted hover:text-neon">
           <ArrowLeft className="h-4 w-4" /> {t('comp.back')}
@@ -71,7 +71,7 @@ export function ReportPage() {
             </p>
           )}
           {report.status === 'FAILED' && (
-            <p className="mt-3 text-sm text-red-300">{errorText({ code: report.errorCode, message: report.errorMessage })}</p>
+            <p className="mt-3 text-sm text-danger">{errorText({ code: report.errorCode, message: report.errorMessage })}</p>
           )}
           <div className="mt-5 grid grid-cols-3 gap-3">
             {(['MET', 'PARTIAL', 'MISSING'] as const).map((v) => {
@@ -89,7 +89,7 @@ export function ReportPage() {
 
       {report.status === 'RUNNING' && (
         <div className="mt-6 h-2 overflow-hidden rounded-full bg-line">
-          <div className="scan-bar h-full rounded-full bg-gradient-to-r from-neon to-violet transition-all duration-700" style={{ width: `${Math.max(progress, 4)}%` }} />
+          <div className="scan-bar h-full rounded-full bg-neon transition-all duration-700" style={{ width: `${Math.max(progress, 4)}%` }} />
         </div>
       )}
 
@@ -99,7 +99,7 @@ export function ReportPage() {
             key={f}
             onClick={() => setFilter(f)}
             className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-              filter === f ? 'bg-neon/15 text-neon shadow-[inset_0_0_0_1px_rgb(34_211_238/0.5)]' : 'text-muted hover:text-white'
+              filter === f ? 'bg-neon/15 text-neon ring-1 ring-neon/30' : 'text-muted hover:text-ink'
             }`}
           >
             {f === 'ALL' ? t('comp.all') : t(`comp.${f}`)}
@@ -125,12 +125,12 @@ function ResultRow({ result }: { result: ReportResult }) {
     <div className="space-y-3 border-t border-line px-4 pb-4 pt-3 pl-12 text-sm">
       <div>
         <div className="label-mono mb-1">{t('comp.requirement')}</div>
-        <p className="text-slate-300">{result.description}</p>
+        <p className="text-ink">{result.description}</p>
       </div>
       {result.evidence && (
         <div>
           <div className="label-mono mb-1">{t('comp.evidence')}</div>
-          <blockquote className="flex gap-2 rounded-lg border border-violet/30 bg-violet/10 p-3 italic text-slate-200">
+          <blockquote className="flex gap-2 rounded-lg border border-violet/30 bg-violet/10 p-3 italic text-ink">
             <Quote className="h-4 w-4 shrink-0 text-violet" />
             {result.evidence}
           </blockquote>
@@ -156,7 +156,7 @@ function ResultRow({ result }: { result: ReportResult }) {
               </span>
             )}
           </div>
-          <p className="mt-1 text-sm text-slate-300">{result.explanation}</p>
+          <p className="mt-1 text-sm text-ink">{result.explanation}</p>
         </div>
         <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform print:hidden ${open ? 'rotate-180' : ''}`} />
       </button>

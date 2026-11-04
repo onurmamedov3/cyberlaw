@@ -34,6 +34,17 @@ spring:
         chat:
           model: ${GEMINI_CHAT_MODEL:gemini-2.5-flash}
           temperature: 0.2
+          # Google's content filter (newer Gemini models filter nothing by default). Dangerous content is only
+          # blocked at HIGH: questions about attacks, malware and cybercrime law are CyberLaw's topic.
+          safety-settings:
+            - category: HARM_CATEGORY_HARASSMENT
+              threshold: BLOCK_MEDIUM_AND_ABOVE
+            - category: HARM_CATEGORY_HATE_SPEECH
+              threshold: BLOCK_MEDIUM_AND_ABOVE
+            - category: HARM_CATEGORY_SEXUALLY_EXPLICIT
+              threshold: BLOCK_MEDIUM_AND_ABOVE
+            - category: HARM_CATEGORY_DANGEROUS_CONTENT
+              threshold: BLOCK_ONLY_HIGH
         embedding:
           api-key: ${GEMINI_API_KEY:PASTE_YOUR_GEMINI_API_KEY_HERE}
           text:

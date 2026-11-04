@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CyberLaw · Letter Glitch preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #03045e; background: #f4fcfe; font: 14px/1.6 "Segoe UI", sans-serif; }
+    main { max-width: 1320px; margin: auto; padding: 40px 28px 64px; }
+    h1, h2 { font-family: Georgia, serif; font-weight: 400; line-height: 1.15; }
+    h1 { font-size: 42px; margin: 18px 0; letter-spacing: -1px; }
+    h2 { font-size: 25px; margin-top: 0; }
+    p { max-width: 760px; color: #496b88; }
+    a { color: #023e8a; }
+    .eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    .preview { display: grid; grid-template-columns: minmax(240px, .55fr) minmax(0, 1fr); align-items: center; gap: 28px; margin-top: 32px; }
+    .animation { overflow: hidden; border-radius: 8px; background: #03045e; border: 1px solid #0096c7; }
+    video { display: block; width: 100%; max-height: 520px; }
+    .screen { display: block; width: 100%; border: 1px solid #90e0ef; border-radius: 8px; }
+    .caption { font-size: 12px; color: #496b88; margin-top: 10px; }
+    .workspace { margin-top: 40px; }
+    .links { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 24px; }
+    :focus-visible { outline: 2px solid #023e8a; outline-offset: 4px; }
+    @media (max-width: 740px) { main { padding: 24px 18px 40px; } h1 { font-size: 34px; } .preview { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">CyberLaw / Blue design / Animation preview</div>
+  <h1>Letter Glitch, in blue.</h1>
+  <p>Your selected React Bits effect, now with larger, brighter cyan letters and a denser, more active pattern over navy. It appears on the sign-in panel and sidebar. The writing and reading surfaces stay clear.</p>
+  <div class="links">
+    <a href="index.html">All design previews</a>
+    <a href="https://reactbits.dev/backgrounds/letter-glitch">Original React Bits demo</a>
+    <a href="letter-glitch-verification.json">Animation check results</a>
+  </div>
+  <section class="preview">
+    <div>
+      <h2>Watch the effect</h2>
+      <div class="animation"><video id="effect" src="letter-glitch.webm" autoplay loop muted playsinline controls aria-label="Recording of the blue Letter Glitch background"></video></div>
+      <p class="caption">A recording of the actual sign-in panel with pointer interaction. The video pauses automatically when reduced motion is requested.</p>
+    </div>
+    <div>
+      <h2>Sign in</h2>
+      <a href="26-letter-glitch-sign-in.png"><img class="screen" src="26-letter-glitch-sign-in.png" alt="Letter Glitch behind the navy sign-in panel"></a>
+      <p class="caption">The Animations preference controls the effect. Switching it off returns to the solid navy background.</p>
+    </div>
+  </section>
+  <section class="workspace">
+    <h2>In the workspace</h2>
+    <a href="27-letter-glitch-workspace.png"><img class="screen" src="27-letter-glitch-workspace.png" alt="A subtle Letter Glitch effect in the CyberLaw sidebar" loading="lazy"></a>
+    <p class="caption"><a href="28-letter-glitch-mobile.png">View the mobile navigation preview.</a> Screenshots use isolated sample data.</p>
+  </section>
+</main>
+<script>
+  const video = document.getElementById('effect');
+  const preference = matchMedia('(prefers-reduced-motion: reduce)');
+  const syncMotion = () => {
+    if (preference.matches) video.pause();
+    else video.play().catch(() => {});
+  };
+  preference.addEventListener('change', syncMotion);
+  syncMotion();
+</script>
+</body>
+</html>

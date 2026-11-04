@@ -1,11 +1,12 @@
 import {type FormEvent, type ReactNode, useState} from 'react'
 import {motion} from 'motion/react'
-import {BookOpen, FolderLock, KeyRound, LoaderCircle, Mail, Radar, User} from 'lucide-react'
+import {BookOpen, FolderLock, KeyRound, LoaderCircle, Mail, ClipboardCheck, User} from 'lucide-react'
 import {useAuth} from '../lib/auth'
 import {useT} from '../lib/settings'
 import {ErrorNote} from '../components/ErrorNote'
 import {Logo} from '../components/Logo'
 import {LanguageSwitch} from '../components/LanguageSwitch'
+import {CyberBackground} from '../components/CyberBackground'
 
 export function LoginPage() {
   const t = useT()
@@ -34,64 +35,62 @@ export function LoginPage() {
   const features = [
     { icon: BookOpen, text: t('auth.feature1') },
     { icon: FolderLock, text: t('auth.feature2') },
-    { icon: Radar, text: t('auth.feature3') },
+    { icon: ClipboardCheck, text: t('auth.feature3') },
   ]
 
   return (
-    <div className="flex min-h-full items-center justify-center p-6">
-      <div className="absolute right-6 top-6">
-        <LanguageSwitch />
-      </div>
-
-      <div className="grid w-full max-w-5xl items-center gap-10 lg:grid-cols-2">
-        <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
+    <div className="auth-shell">
+      <section className="auth-story">
+          <CyberBackground variant="sign-in" />
           <Logo size="lg" />
-          <p className="mt-5 text-lg text-slate-300">{t('brand.tagline')}</p>
-          <ul className="mt-8 space-y-4">
+          <div className="my-10 max-w-xl">
+            <p className="label-mono mb-6 text-neon">{t('workspace.research')}</p>
+            <h1>{t('workspace.authTitle')}</h1>
+            <p className="mt-6 max-w-sm text-sm leading-relaxed text-muted">{t('brand.tagline')}</p>
+          </div>
+          <ul className="auth-features max-w-lg">
             {features.map(({ icon: Icon, text }, i) => (
               <motion.li
                 key={text}
-                className="flex items-center gap-3 text-slate-300"
+                className="auth-feature"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.15 }}
               >
-                <span className="grid h-9 w-9 place-items-center rounded-lg border border-neon/30 bg-neon/10">
+                <span className="mt-0.5 text-neon">
                   <Icon className="h-4.5 w-4.5 text-neon" />
                 </span>
                 {text}
               </motion.li>
             ))}
           </ul>
-          <div className="label-mono mt-10 hidden lg:block">
-            &gt; secure_channel: <span className="text-acid">established</span>
-            <span className="typing-cursor" />
-          </div>
-        </motion.div>
-
+      </section>
+      <div className="auth-form-panel">
+        <div className="absolute right-6 top-6"><LanguageSwitch /></div>
         <motion.form
           onSubmit={submit}
-          className="glass p-8 shadow-[0_0_60px_-20px_var(--color-neon)]"
+          className="auth-form"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <h2 className="text-2xl font-bold">{mode === 'login' ? t('auth.login') : t('auth.register')}</h2>
-          <p className="mt-1 text-sm text-muted">{t('auth.welcome')}</p>
+          <h2 className="font-display text-4xl font-medium tracking-tight">{mode === 'login' ? t('auth.login') : t('auth.register')}</h2>
+          <p className="mt-3 text-sm text-muted">{t('auth.welcome')}</p>
 
           <div className="mt-7 space-y-4">
             {mode === 'register' && (
               <Field icon={User} label={t('auth.name')}>
-                <input className="input pl-10" value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} />
+                <input autoComplete="name" className="input pl-10" value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} />
               </Field>
             )}
             <Field icon={Mail} label={t('auth.email')}>
-              <input className="input pl-10" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <input autoComplete="email" className="input pl-10" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </Field>
             <Field icon={KeyRound} label={t('auth.password')}>
               <input
                 className="input pl-10"
                 type="password"
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

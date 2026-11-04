@@ -2,7 +2,6 @@ import {Navigate, Route, Routes} from 'react-router-dom'
 import {LoaderCircle} from 'lucide-react'
 import {useAuth} from './lib/auth'
 import {ChatProvider} from './lib/chat'
-import {CyberBackground} from './components/CyberBackground'
 import {Layout} from './components/Layout'
 import {LoginPage} from './pages/LoginPage'
 import {ChatPage} from './pages/ChatPage'
@@ -18,7 +17,6 @@ export function App() {
   if (loading) {
     return (
       <div className="grid h-full place-items-center">
-        <CyberBackground />
         <LoaderCircle className="h-10 w-10 animate-spin text-neon" />
       </div>
     )
@@ -27,7 +25,6 @@ export function App() {
   if (!user) {
     return (
       <>
-        <CyberBackground />
         <Routes>
           <Route path="*" element={<LoginPage />} />
         </Routes>
@@ -37,7 +34,6 @@ export function App() {
 
   return (
     <ChatProvider key={user.id}>
-      <CyberBackground />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/chat" element={<ChatPage />} />

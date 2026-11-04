@@ -89,7 +89,7 @@ export function ChatHistoryList({ onNavigate }: { onNavigate: () => void }) {
                   <div
                     key={c.id}
                     className={`group flex items-center gap-1 rounded-lg transition-colors ${
-                      active ? 'bg-neon/10 text-neon' : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                      active ? 'bg-neon/10 text-neon' : 'text-ink hover:bg-neon/5 hover:text-ink'
                     }`}
                   >
                     {editing?.id === c.id ? (
@@ -116,7 +116,7 @@ export function ChatHistoryList({ onNavigate }: { onNavigate: () => void }) {
                     {showActions ? (
                       <>
                         <button
-                          className="rounded-md p-1.5 text-muted hover:text-white"
+                          className="rounded-md p-1.5 text-muted hover:text-ink"
                           onClick={() => {
                             setActionsFor(null)
                             setEditing({ id: c.id, title: c.title })
@@ -135,7 +135,7 @@ export function ChatHistoryList({ onNavigate }: { onNavigate: () => void }) {
                           <Trash className="h-3.5 w-3.5" />
                         </button>
                         <button
-                          className="mr-1 rounded-md p-1.5 text-muted hover:text-white"
+                          className="mr-1 rounded-md p-1.5 text-muted hover:text-ink"
                           onClick={() => setActionsFor(null)}
                           aria-label={t('common.close')}
                         >
@@ -146,7 +146,7 @@ export function ChatHistoryList({ onNavigate }: { onNavigate: () => void }) {
                       editing?.id !== c.id && (
                         // always visible on phones; on a computer it appears on hover
                         <button
-                          className="mr-1 rounded-md p-1.5 text-muted hover:text-white md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
+                          className="mr-1 rounded-md p-1.5 text-muted hover:text-ink md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
                           onClick={() => setActionsFor(c.id)}
                           aria-label={t('history.actions')}
                           title={t('history.actions')}

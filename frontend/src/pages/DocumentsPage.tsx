@@ -34,7 +34,7 @@ export function DocumentsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="workspace-page">
       <PageHeader icon={<FolderLock className="h-6 w-6" />} title={t('docs.title')} subtitle={t('docs.subtitle')} />
 
       <UploadZone
@@ -49,7 +49,7 @@ export function DocumentsPage() {
           poll() // keep refreshing until indexing is done
         }}
       />
-      <div className="mt-4 flex gap-3 rounded-xl border border-amber/30 bg-amber/5 p-3 text-xs text-amber-100/90">
+      <div className="mt-4 flex gap-3 rounded-xl border border-amber/30 bg-amber/5 p-3 text-xs text-amber">
         <ShieldAlert className="h-4 w-4 shrink-0 text-amber" />
         <div>
           <p>{t('docs.privacy')}</p>
@@ -70,7 +70,7 @@ export function DocumentsPage() {
         {data && mine.length === 0 && (
           <div className="glass flex flex-col items-center gap-2 p-8 text-center text-muted">
             <FileUp className="h-8 w-8 text-neon/60" />
-            <p className="font-medium text-slate-300">{t('docs.empty')}</p>
+            <p className="font-medium text-ink">{t('docs.empty')}</p>
             <p className="text-sm">{t('docs.emptyHint')}</p>
           </div>
         )}
@@ -138,7 +138,7 @@ function QuotaMeter({ used, max }: { used: number; max: number }) {
     <div className="flex items-center gap-3">
       <div className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-line sm:block">
         <div
-          className={`h-full rounded-full transition-all ${full ? 'bg-amber' : 'bg-gradient-to-r from-neon to-violet'}`}
+          className={`h-full rounded-full transition-all ${full ? 'bg-amber' : 'bg-neon'}`}
           style={{ width: `${Math.min(100, (used / max) * 100)}%` }}
         />
       </div>
