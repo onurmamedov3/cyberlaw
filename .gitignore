@@ -18,5 +18,11 @@ docs/*
 .idea/
 .vscode/
 *.iml
+.classpath
+.project
+.settings/
+.metadata/
+.factorypath
+.externalToolBuilders/
 .DS_Store
 Thumbs.db
